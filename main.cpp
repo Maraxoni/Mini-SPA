@@ -1,8 +1,7 @@
 #include <bits/stdc++.h>
 
-int main()
-{
-    
+int main() {
+
     printf("Sample");
     return 0;
 }
