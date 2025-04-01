@@ -10,6 +10,6 @@
 
 #include <iostream>
 
-void fatal_error(const std::string &message);
+void fatal_error(const std::string &func, int line, const std::string &message);
 
 #endif //MINISPA_UTILS_H

@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "nodes.h"
 
+
 enum TokenType : int {
     PROCEDURE,  // procedure
     WHILE,  // while
@@ -71,6 +72,7 @@ private:
     std::string code;
     size_t pos;
     char currentChar;
+    size_t last_pos;
 
     void advance() {
         pos++;
@@ -86,6 +88,7 @@ public:
         this->code = code;
         pos = 0;
         currentChar = this->code[pos];
+        last_pos = this->code.size();
     }
 
     Token next_token() {
@@ -138,28 +141,32 @@ public:
             return {TokenType::SEMICOLON, ";"};
         }
 
-        std::cout << "Error: Unexpected character " << currentChar << std::endl;
+        if (currentChar == '\0') {
+            return {TokenType::END, ""};
+        }
+
+        fatal_error(__PRETTY_FUNCTION__, __LINE__, "Error: Unexpected character " + std::string(1, currentChar));
         return {TokenType::END, ""};
     }
 };
 
 class Parser {
 private:
-    Token currentToken;
+    Token currentToken{};
 
     void eat_token(TokenType type) {
         if (currentToken.type == type) {
             currentToken = lexer->next_token();
         } else {
-            fatal_error("Unexpected token " + currentToken.to_string());
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token " + currentToken.to_string());
         }
     }
 
-    bool load_code_from_file(const std::string &filePath, std::string &code) {
+    static bool load_code_from_file(const std::string &filePath, std::string &code) {
         //open file
         std::ifstream t(filePath);
         if (!t) {
-            std::cerr << "Blad: Nie mozna otworzyc pliku " << filePath << std::endl;
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Cannot open file " + filePath);
             return false;
         }
 
@@ -169,10 +176,10 @@ private:
         code = buffer.str();
 
         if (code.empty()) {
-            std::cerr << "Blad: Plik jest pusty!" << std::endl;
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "File is empty");
             return false;
         } else {
-            std::cout << "Wczytano kod:\n" << code << std::endl;
+//            std::cout << "Wczytano kod:\n" << code << std::endl;
             return true;
         }
     }
@@ -181,14 +188,101 @@ public:
     std::unique_ptr<Lexer> lexer;
     bool initialized = false;
 
-    explicit Parser(const std::string &filePath) {
+    Parser() = default;
+
+
+    bool initialize_by_file(const std::string &filePath) {
         std::string code;
         if (!load_code_from_file(filePath, code)) {
-            return;
+            return false;
         }
 
         this->lexer = std::make_unique<Lexer>(code);
+        currentToken = this->lexer->next_token();
         this->initialized = true;
+        return true;
+    }
+
+    bool initialize_by_raw_code(const std::string &code) {
+        this->lexer = std::make_unique<Lexer>(code);
+        currentToken = this->lexer->next_token();
+        this->initialized = true;
+        return true;
+    }
+
+    std::shared_ptr<Node> parse_factor() {
+        if (!initialized) {
+            return nullptr;
+        }
+        if (currentToken.type == TokenType::NAME) {
+            std::string value = currentToken.value;
+            eat_token(TokenType::NAME);
+            return std::make_shared<Factor>(value);
+        }
+        if (currentToken.type == TokenType::INTEGER) {
+            std::string value = currentToken.value;
+            eat_token(TokenType::INTEGER);
+            return std::make_shared<Factor>(value);
+        }
+
+        fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token " + currentToken.to_string());
+        return nullptr;
+    }
+
+    std::shared_ptr<Procedure> parseProcedure() {
+        eat_token(TokenType::PROCEDURE);
+        std::string name = currentToken.value;
+        eat_token(TokenType::NAME);
+        eat_token(TokenType::LBRACE);
+        auto stmt_list = parseStmtLst();
+        eat_token(TokenType::RBRACE);
+        return std::make_shared<Procedure>(name, stmt_list);
+    }
+
+    std::vector<std::shared_ptr<Node>> parseStmtLst() {
+        std::vector<std::shared_ptr<Node>> stmts;
+        while (currentToken.type == TokenType::NAME || currentToken.type == TokenType::WHILE) {
+            stmts.push_back(parseStmt());
+        }
+        return stmts;
+    }
+
+    std::shared_ptr<Node> parseStmt() {
+        if (currentToken.type == TokenType::NAME) return parseAssign();
+        if (currentToken.type == TokenType::WHILE) return parseWhile();
+
+        fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token " + currentToken.to_string());
+        return nullptr;
+    }
+
+    std::shared_ptr<WhileStmt> parseWhile() {
+        eat_token(TokenType::WHILE);
+        std::string var_name = currentToken.value;
+        eat_token(TokenType::NAME);
+        eat_token(TokenType::LBRACE);
+        auto stmt_list = parseStmtLst();
+        eat_token(TokenType::RBRACE);
+        return std::make_shared<WhileStmt>(var_name, stmt_list);
+    }
+
+    std::shared_ptr<Assign> parseAssign() {
+        std::string var_name = currentToken.value;
+        eat_token(TokenType::NAME);
+        eat_token(TokenType::EQUAL);
+        auto expr = parseExpr();
+        eat_token(TokenType::SEMICOLON);
+        return std::make_shared<Assign>(var_name, expr);
+    }
+
+    std::shared_ptr<Node> parseExpr() {
+        auto left = parseFactor();
+        while (currentToken.type == TokenType::PLUS) {
+            char op = currentToken.value[0];
+            eat_token(TokenType::PLUS);
+            auto right = parseFactor();
+            left = std::make_shared<Expr>(left, op, right);
+        }
+        return left;
     }
 
     std::shared_ptr<Node> parseFactor() {
@@ -203,25 +297,13 @@ public:
             return std::make_shared<Factor>(value);
         }
 
-        fatal_error("Unexpected token " + currentToken.to_string());
+        fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token " + currentToken.to_string());
         return nullptr;
     }
 };
 
-void load_code() {
-    std::string path = "../input_min.txt";
-    Parser parser(path);
-    if (!parser.initialized) {
-        return;
-    }
-
-    Lexer *lexer = parser.lexer.get();
-
-    std::cout << "Code: " << path << std::endl;
-
-    Token token = lexer->next_token();
-    while (token.type != TokenType::END) {
-        std::cout << "Token: " << token.to_string() << std::endl;
-        token = lexer->next_token();
-    }
+namespace parser {
+    void test1();
 }
+
+

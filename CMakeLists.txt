@@ -3,4 +3,4 @@ project(MiniSPA)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(MiniSPA main.cpp parser.cpp parser.h)
+add_executable(MiniSPA parser.cpp parser.h nodes.h main.cpp utils.cpp utils.h)

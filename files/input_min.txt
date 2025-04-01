@@ -1,0 +1,31 @@
+procedure Circle {
+t = 1;
+a = t + 10;
+d = a + 2;
+b = t + a + d + 3;
+c = b + 5 + 42;
+
+while c {
+    k = a + d + 7;
+    d = d + t + c + 9;
+    c = d + 1 + 8;
+}
+
+a = d + t + k + 6;
+
+while a {
+    x = d + 3 + a + c + 11;
+    c = c + 20 + x + 14;
+    t = t + c + 7 + 13;
+}
+
+d = t + a + b + 15;
+
+while d {
+    d = t + 2 + x + 17;
+    a = t + a + d + k + b + c + 19;
+}
+
+c = t + k + d + x + 21;
+t = a + t + c + 4 + 23;
+}

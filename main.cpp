@@ -4,13 +4,14 @@
 
 int main() {
     int input;
-    std::cin >> input;
     std::cout << "1. Parser" << std::endl;
-    std::cout << "Enter option: " << input << std::endl;
+    std::cout << "Enter option: " << std::endl;
+    std::cin >> input;
 
     switch (input) {
         case 1: {
-            std::cout << "Case 1" << std::endl;
+            std::cout << "Parser: " << std::endl;
+            parser::test1();
             break;
         }
     }

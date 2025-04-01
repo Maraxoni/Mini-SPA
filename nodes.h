@@ -13,6 +13,8 @@
 class Node {
 public:
     virtual ~Node() = default;
+
+    [[nodiscard]] virtual std::string to_string() const = 0;
 };
 
 // stmtLst : stmt+
@@ -28,6 +30,15 @@ public:
         this->name = name;
         this->stmt_list = stmt_list;
     }
+
+    [[nodiscard]] std::string to_string() const override {
+        std::string result = "===== PROCEDURE  " + name + " {\n";
+        for (const auto &stmt : stmt_list) {
+            result +=  stmt->to_string() + "\n";
+        }
+        result += "}\n===== END PROCEDURE " + name;
+        return result;
+    }
 };
 
 // while : ‘while’ var_name ‘{‘ stmtLst ‘}’
@@ -40,6 +51,15 @@ public:
         this->var_name = var_name;
         this->stmt_list = stmt_list;
     }
+
+    [[nodiscard]] std::string to_string() const override {
+        std::string result = "=== WHILE " + var_name + " {\n";
+        for (const auto &stmt : stmt_list) {
+            result += stmt->to_string() + "\n";
+        }
+        result += "}\n=== END WHILE " + var_name;
+        return result;
+    }
 };
 
 // assign : var_name ‘=’ expr ‘;’
@@ -51,6 +71,10 @@ public:
     Assign(const std::string &var_name, const std::shared_ptr<Node> &expr) {
         this->var_name = var_name;
         this->expr = expr;
+    }
+
+    [[nodiscard]] std::string to_string() const override {
+        return var_name + " = " + expr->to_string() + ";";
     }
 };
 
@@ -65,6 +89,10 @@ public:
         this->left = left;
         this->op = op;
         this->right = right;
+    }
+
+    [[nodiscard]] std::string to_string() const override {
+        return left->to_string() + " " + op + " " + right->to_string();
     }
 };
 
@@ -82,6 +110,10 @@ public:
 
     Factor(const std::string &value) {
         this->value = value;
+    }
+
+    [[nodiscard]] std::string to_string() const override {
+        return value;
     }
 };
 
