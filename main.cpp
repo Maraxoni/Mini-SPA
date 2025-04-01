@@ -2,6 +2,7 @@
 
 int main()
 {
+    
     printf("Sample");
     return 0;
 }
