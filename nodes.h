@@ -15,16 +15,12 @@ namespace simple_semantic_utils {
     bool verify_integer(const std::string &value);
 
 }
+
 class Node {
 public:
     virtual ~Node() = default;
 
     [[nodiscard]] virtual std::string to_string() const = 0;
-
-    //TODO: probably remove verify() instead use verify just before adding to the tree
-    virtual bool verify() const {
-        return true;
-    }
 };
 
 // stmtLst : stmt+
@@ -49,20 +45,6 @@ public:
         result += "}\n===== END PROCEDURE " + name;
         return result;
     }
-
-    [[nodiscard]] bool verify() const override {
-        if (!simple_semantic_utils::verify_name(name)) {
-            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Invalid procedure name: " + name);
-            return false;
-        }
-
-        if (stmt_list.empty()) {
-            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Procedure " + name + " has no statements");
-            return false;
-        }
-
-        return true;
-    }
 };
 
 // while : ‘while’ var_name ‘{‘ stmtLst ‘}’
@@ -84,20 +66,6 @@ public:
         result += "}\n=== END WHILE " + var_name;
         return result;
     }
-
-    [[nodiscard]] bool verify() const override {
-        if (!simple_semantic_utils::verify_name(var_name)) {
-            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Invalid variable name: " + var_name);
-            return false;
-        }
-
-        if (stmt_list.empty()) {
-            fatal_error(__PRETTY_FUNCTION__, __LINE__, "While statement " + var_name + " has no statements");
-            return false;
-        }
-
-        return true;
-    }
 };
 
 // assign : var_name ‘=’ expr ‘;’
@@ -113,20 +81,6 @@ public:
 
     [[nodiscard]] std::string to_string() const override {
         return var_name + " = " + expr->to_string() + ";";
-    }
-
-    [[nodiscard]] bool verify() const override {
-        if (!simple_semantic_utils::verify_name(var_name)) {
-            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Invalid variable name: " + var_name);
-            return false;
-        }
-
-        if (expr == nullptr) {
-            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Assign statement " + var_name + " has no expression");
-            return false;
-        }
-
-        return true;
     }
 };
 
@@ -146,20 +100,6 @@ public:
     [[nodiscard]] std::string to_string() const override {
         return left->to_string() + " " + op + " " + right->to_string();
     }
-
-    [[nodiscard]] bool verify() const override {
-        if (left == nullptr) {
-            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Expr has no left node");
-            return false;
-        }
-
-        if (right == nullptr) {
-            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Expr has no right node");
-            return false;
-        }
-
-        return true;
-    }
 };
 
 // NAME : LETTER (LETTER | DIGIT)*
@@ -169,21 +109,16 @@ public:
 
 // factor : var_name | const_value
 // store NAME or INTEGER
-//TODO: add value check for var_name and const_value
 class Factor : public Node {
 public:
     std::string value;
 
-    Factor(const std::string &value) {
+    explicit Factor(const std::string &value) {
         this->value = value;
     }
 
     [[nodiscard]] std::string to_string() const override {
         return value;
-    }
-
-    [[nodiscard]] bool verify() const override {
-        return true;
     }
 };
 

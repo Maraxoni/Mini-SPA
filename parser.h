@@ -1,5 +1,3 @@
-
-
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -144,6 +142,7 @@ public:
             return {TokenType::SEMICOLON, ";"};
         }
 
+        //after reaching end of file, advance() would set currentChar to '\0'
         if (currentChar == '\0') {
             return {TokenType::END, ""};
         }
@@ -157,11 +156,14 @@ class Parser {
 private:
     Token currentToken{};
 
-    void eat_token(TokenType type) {
+    //verify if current token is the expected one
+    //if so, eat it and read the next one (and set it as current)
+    void eat_and_read_next_token(TokenType type) {
         if (currentToken.type == type) {
             currentToken = lexer->next_token();
         } else {
-            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token " + currentToken.to_string());
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Expected to eat token " + std::to_string(type) + " but got " +
+                                                       currentToken.to_string());
         }
     }
 
@@ -201,31 +203,42 @@ public:
         }
 
         this->lexer = std::make_unique<Lexer>(code);
+
+        //read first token
         currentToken = this->lexer->next_token();
         this->initialized = true;
         return true;
     }
 
     bool initialize_by_raw_code(const std::string &code) {
+        if (code.empty()) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Empty code");
+            return false;
+        }
         this->lexer = std::make_unique<Lexer>(code);
+
+        //read first token
         currentToken = this->lexer->next_token();
         this->initialized = true;
         return true;
     }
 
 
-    std::shared_ptr<Procedure> parseProcedure() {
-        eat_token(TokenType::PROCEDURE);
+    std::shared_ptr<Procedure> parse_procedure() {
+        eat_and_read_next_token(TokenType::PROCEDURE);
+
+        //after 'procedure' keyword, there should be a name of the procedure
         std::string name = currentToken.value;
-        eat_token(TokenType::NAME);
-        eat_token(TokenType::LBRACE);
+        eat_and_read_next_token(TokenType::NAME);
+        eat_and_read_next_token(TokenType::LBRACE);
 
         auto stmt_list = parse_stmt_list();
         if (stmt_list.empty()) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Empty procedure");
             return nullptr;
         }
-        eat_token(TokenType::RBRACE);
+
+        eat_and_read_next_token(TokenType::RBRACE);
         return std::make_shared<Procedure>(name, stmt_list);
     }
 
@@ -246,10 +259,10 @@ public:
     }
 
     std::shared_ptr<WhileStmt> parse_while() {
-        eat_token(TokenType::WHILE);
+        eat_and_read_next_token(TokenType::WHILE);
         std::string var_name = currentToken.value;
-        eat_token(TokenType::NAME);
-        eat_token(TokenType::LBRACE);
+        eat_and_read_next_token(TokenType::NAME);
+        eat_and_read_next_token(TokenType::LBRACE);
 
         auto stmt_list = parse_stmt_list();
         if (stmt_list.empty()) {
@@ -257,18 +270,18 @@ public:
             return nullptr;
         }
 
-        eat_token(TokenType::RBRACE);
+        eat_and_read_next_token(TokenType::RBRACE);
         return std::make_shared<WhileStmt>(var_name, stmt_list);
     }
 
     std::shared_ptr<Assign> parse_assign() {
         std::string var_name = currentToken.value;
-        eat_token(TokenType::NAME);
+        eat_and_read_next_token(TokenType::NAME);
 
-        eat_token(TokenType::EQUAL);
+        eat_and_read_next_token(TokenType::EQUAL);
         auto expr = parse_expr();
 
-        eat_token(TokenType::SEMICOLON);
+        eat_and_read_next_token(TokenType::SEMICOLON);
         return std::make_shared<Assign>(var_name, expr);
     }
 
@@ -286,7 +299,7 @@ public:
                 return nullptr;
             }
 
-            eat_token(TokenType::PLUS);
+            eat_and_read_next_token(TokenType::PLUS);
             auto right = parse_factor();
             left = std::make_shared<Expr>(left, op, right);
         }
@@ -305,7 +318,7 @@ public:
                 return nullptr;
             }
 
-            eat_token(TokenType::NAME);
+            eat_and_read_next_token(TokenType::NAME);
             return std::make_shared<Factor>(value);
         }
         if (currentToken.type == TokenType::INTEGER) {
@@ -315,7 +328,7 @@ public:
                 return nullptr;
             }
 
-            eat_token(TokenType::INTEGER);
+            eat_and_read_next_token(TokenType::INTEGER);
             return std::make_shared<Factor>(value);
         }
 

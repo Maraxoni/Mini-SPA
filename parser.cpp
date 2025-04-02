@@ -7,6 +7,6 @@ void parser::test1() {
         return;
     }
 
-    auto procedure = parser.parseProcedure();
+    auto procedure = parser.parse_procedure();
     std::cout << procedure->to_string() << std::endl;
 }

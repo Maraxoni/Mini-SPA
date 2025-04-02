@@ -1,7 +1,3 @@
-//
-// Created by Kaspek on 02.04.2025.
-//
-
 #include "nodes.h"
 
 bool simple_semantic_utils::verify_name(const std::string &name) {
