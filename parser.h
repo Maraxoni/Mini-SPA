@@ -55,32 +55,36 @@ struct Token {
     }
 };
 
-// NAME : LETTER (LETTER | DIGIT)*
-//INTEGER: DIGIT+
-//procedure : ‘procedure’ proc_name ‘{‘ stmtLst ‘}’
-//stmtLst : stmt+
-//stmt : assign | while
-//while : ‘while’ var_name ‘{‘ stmtLst ‘}’
-//assign : var_name ‘=’ expr ‘;’
-//expr : expr ‘+’ factor | factor
-//factor : var_name | const_value
-//var_name : NAME
-//const_value : INTEGER
+
+/*
+NAME : LETTER (LETTER | DIGIT)*
+INTEGER: DIGIT+
+procedure : ‘procedure’ proc_name ‘{‘ stmtLst ‘}’
+stmtLst : stmt+
+stmt : assign | while
+while : ‘while’ var_name ‘{‘ stmtLst ‘}’
+assign : var_name ‘=’ expr ‘;’
+expr : expr ‘+’ factor | factor
+factor : var_name | const_value
+var_name : NAME
+const_value : INTEGER
+ */
 
 class Lexer {
 private:
     std::string code;
     size_t pos;
     char currentChar;
-    size_t last_pos;
 
     void advance() {
         pos++;
-        currentChar = (pos < code.size()) ? code[pos] : '\0';
+        currentChar = (pos < code.size()) ? code[pos] : '\0'; //if pos is out of bounds, return null character
     }
 
     void skip_whitespace() {
-        while (isspace(currentChar)) advance();
+        while (isspace(currentChar)) {
+            advance();
+        }
     }
 
 public:
@@ -88,7 +92,6 @@ public:
         this->code = code;
         pos = 0;
         currentChar = this->code[pos];
-        last_pos = this->code.size();
     }
 
     Token next_token() {
@@ -210,89 +213,108 @@ public:
         return true;
     }
 
-    std::shared_ptr<Node> parse_factor() {
-        if (!initialized) {
-            return nullptr;
-        }
-        if (currentToken.type == TokenType::NAME) {
-            std::string value = currentToken.value;
-            eat_token(TokenType::NAME);
-            return std::make_shared<Factor>(value);
-        }
-        if (currentToken.type == TokenType::INTEGER) {
-            std::string value = currentToken.value;
-            eat_token(TokenType::INTEGER);
-            return std::make_shared<Factor>(value);
-        }
-
-        fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token " + currentToken.to_string());
-        return nullptr;
-    }
 
     std::shared_ptr<Procedure> parseProcedure() {
         eat_token(TokenType::PROCEDURE);
         std::string name = currentToken.value;
         eat_token(TokenType::NAME);
         eat_token(TokenType::LBRACE);
-        auto stmt_list = parseStmtLst();
+
+        auto stmt_list = parse_stmt_list();
+        if (stmt_list.empty()) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Empty procedure");
+            return nullptr;
+        }
         eat_token(TokenType::RBRACE);
         return std::make_shared<Procedure>(name, stmt_list);
     }
 
-    std::vector<std::shared_ptr<Node>> parseStmtLst() {
+    std::vector<std::shared_ptr<Node>> parse_stmt_list() {
         std::vector<std::shared_ptr<Node>> stmts;
         while (currentToken.type == TokenType::NAME || currentToken.type == TokenType::WHILE) {
-            stmts.push_back(parseStmt());
+            stmts.push_back(parse_stmt());
         }
         return stmts;
     }
 
-    std::shared_ptr<Node> parseStmt() {
-        if (currentToken.type == TokenType::NAME) return parseAssign();
-        if (currentToken.type == TokenType::WHILE) return parseWhile();
+    std::shared_ptr<Node> parse_stmt() {
+        if (currentToken.type == TokenType::NAME) return parse_assign();
+        if (currentToken.type == TokenType::WHILE) return parse_while();
 
-        fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token " + currentToken.to_string());
+        fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token in statement " + currentToken.to_string());
         return nullptr;
     }
 
-    std::shared_ptr<WhileStmt> parseWhile() {
+    std::shared_ptr<WhileStmt> parse_while() {
         eat_token(TokenType::WHILE);
         std::string var_name = currentToken.value;
         eat_token(TokenType::NAME);
         eat_token(TokenType::LBRACE);
-        auto stmt_list = parseStmtLst();
+
+        auto stmt_list = parse_stmt_list();
+        if (stmt_list.empty()) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Empty while loop");
+            return nullptr;
+        }
+
         eat_token(TokenType::RBRACE);
         return std::make_shared<WhileStmt>(var_name, stmt_list);
     }
 
-    std::shared_ptr<Assign> parseAssign() {
+    std::shared_ptr<Assign> parse_assign() {
         std::string var_name = currentToken.value;
         eat_token(TokenType::NAME);
+
         eat_token(TokenType::EQUAL);
-        auto expr = parseExpr();
+        auto expr = parse_expr();
+
         eat_token(TokenType::SEMICOLON);
         return std::make_shared<Assign>(var_name, expr);
     }
 
-    std::shared_ptr<Node> parseExpr() {
-        auto left = parseFactor();
+    std::shared_ptr<Node> parse_expr() {
+        if (!initialized) {
+            return nullptr;
+        }
+
+        auto left = parse_factor();
         while (currentToken.type == TokenType::PLUS) {
             char op = currentToken.value[0];
+            //TODO: implement other operations like -, *, /
+            if (op != '+') {
+                fatal_error(__PRETTY_FUNCTION__, __LINE__, "Invalid operation " + std::string(1, op));
+                return nullptr;
+            }
+
             eat_token(TokenType::PLUS);
-            auto right = parseFactor();
+            auto right = parse_factor();
             left = std::make_shared<Expr>(left, op, right);
         }
         return left;
     }
 
-    std::shared_ptr<Node> parseFactor() {
+    std::shared_ptr<Node> parse_factor() {
+        if (!initialized) {
+            return nullptr;
+        }
+
         if (currentToken.type == TokenType::NAME) {
             std::string value = currentToken.value;
+            if (!simple_semantic_utils::verify_name(value)) {
+                fatal_error(__PRETTY_FUNCTION__, __LINE__, "Invalid variable name " + value);
+                return nullptr;
+            }
+
             eat_token(TokenType::NAME);
             return std::make_shared<Factor>(value);
         }
         if (currentToken.type == TokenType::INTEGER) {
             std::string value = currentToken.value;
+            if (!simple_semantic_utils::verify_integer(value)) {
+                fatal_error(__PRETTY_FUNCTION__, __LINE__, "Invalid integer value " + value);
+                return nullptr;
+            }
+
             eat_token(TokenType::INTEGER);
             return std::make_shared<Factor>(value);
         }
@@ -300,6 +322,7 @@ public:
         fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token " + currentToken.to_string());
         return nullptr;
     }
+
 };
 
 namespace parser {
