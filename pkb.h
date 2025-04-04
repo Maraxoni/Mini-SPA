@@ -255,7 +255,7 @@ public:
                 break;
             }
             default: {
-                fatal_error(__PRETTY_FUNCTION__, __LINE__, "Node1 can't modify.");
+                return false;
             }
         }
     }
