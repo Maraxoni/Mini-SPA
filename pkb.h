@@ -143,12 +143,12 @@ public:
         return children;
     }
 
-    void set_TNode_children(std::shared_ptr<TNode> parent, std::vector<std::shared_ptr<Node>> children) {
+    void set_tnode_children(std::shared_ptr<TNode> parent, std::vector<std::shared_ptr<Node>> children) {
         if (children.size() == 0) { return; }
         else if (children.size() == 1) {
             std::shared_ptr<TNode> first_child = std::make_shared<TNode>(children[0]);
             parent->set_first_child(first_child);
-            set_TNode_children(first_child, get_tnode_children_as_node(first_child));
+            set_tnode_children(first_child, get_tnode_children_as_node(first_child));
         }
         else {
             std::shared_ptr<TNode> current_child = std::make_shared<TNode>(children[0]);
@@ -157,10 +157,10 @@ public:
             for (int i = 0; i < children.size() - 1; i++) {
                 next_child = std::make_shared<TNode>(children[i + 1]);
                 current_child->set_right_sibling(next_child);
-                set_TNode_children(current_child, get_tnode_children_as_node(current_child));
+                set_tnode_children(current_child, get_tnode_children_as_node(current_child));
                 current_child = next_child;
             }
-            set_TNode_children(current_child, get_tnode_children_as_node(current_child));
+            set_tnode_children(current_child, get_tnode_children_as_node(current_child));
         }
     }
 
@@ -171,7 +171,7 @@ public:
         }
 
         auto rootNode = std::make_shared<TNode>(parser->parse_procedure());
-        set_TNode_children(rootNode, get_tnode_children_as_node(rootNode));
+        set_tnode_children(rootNode, get_tnode_children_as_node(rootNode));
 
         return rootNode;
     }
@@ -235,9 +235,8 @@ public:
         if (node2->get_tnode_type() != TN_FACTOR) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Only factor can be modified.");
         }
-        bool result;
         switch (node1->get_tnode_type()) {
-            case TN_PROCEDURE:
+            case TN_PROCEDURE: 
             case TN_WHILE: {
                 for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
                     if (modifies(child, node2)) { return true; }
@@ -253,6 +252,62 @@ public:
                     return false;
                 }
                 break;
+            }
+            default: {
+                return false;
+            }
+        }
+    }
+
+    bool uses(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+        if (node2->get_tnode_type() != TN_FACTOR) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Only factor can be used.");
+        }
+        switch (node1->get_tnode_type()) {
+            case TN_PROCEDURE:{
+                for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+                    if (uses(child, node2)) { return true; }
+                }
+                return false;
+                break;
+            }
+            case TN_WHILE: {
+                if (node1->get_first_child() == node2) { return true;}
+                std::vector<std::shared_ptr<TNode>> children = get_tnode_children(node1);
+                children.erase(children.begin()); // ignoring first child (conditional variable)
+                for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+                    if (uses(child, node2)) { return true; }
+                }
+                return false;
+                break;
+            }
+            case TN_ASSIGN: {
+                std::shared_ptr<TNode> child = node1->get_first_child()->get_right_sibling();
+                if (child->get_tnode_type() == TN_FACTOR) {
+                    if (child == node2) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                } else { // child is expression
+                    return uses(child, node2);
+                }
+                return uses(child, node2);
+                break;
+            }
+            case TN_EXPRESSION: {
+                bool result = false;
+                for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+                    if (child->get_tnode_type() == TN_FACTOR) {
+                        if (child == node2) {
+                            result = true;
+                        }
+                    } else { // child is expression
+                        result = uses(child, node2);
+                    }
+                }
+                return result;
             }
             default: {
                 return false;
