@@ -7,7 +7,7 @@
 #include "nodes.h"
 #include "parser.h"
 
-enum TNodeType : int {
+enum TNode_type : int {
   TN_PROCEDURE,
   TN_WHILE,
   TN_ASSIGN,
@@ -19,7 +19,7 @@ class TNode {
 public:
     TNode(std::shared_ptr<Node>node) {
         this->node = std::move(node);
-        this->set_node_type();
+        this->set_tnode_type();
     }
 
     std::string to_string()
@@ -32,22 +32,22 @@ public:
     }
 
     void set_first_child(std::shared_ptr<TNode> child) {
-      this->firstChild = child;
+      this->first_child = child;
     }
 
     std::shared_ptr<TNode> get_first_child() {
-        return firstChild;
+        return first_child;
     }
 
     void set_right_sibling(std::shared_ptr<TNode> sibling) {
-        this->rightSibling = sibling;
+        this->first_sibling = sibling;
     }
 
     std::shared_ptr<TNode> get_right_sibling() {
-        return rightSibling;
+        return first_sibling;
     }
 
-    void set_node_type(){
+    void set_tnode_type(){
         if (std::dynamic_pointer_cast<Procedure>(node)) {
             type = TN_PROCEDURE;
         } else if (std::dynamic_pointer_cast<WhileStmt>(node)) {
@@ -61,7 +61,7 @@ public:
         }
     }
 
-    TNodeType get_node_type(){
+    TNode_type get_tnode_type(){
       return type;
     }
 
@@ -81,9 +81,9 @@ public:
 
 private:
     std::shared_ptr<Node> node;
-    std::shared_ptr<TNode> firstChild;
-    std::shared_ptr<TNode> rightSibling;
-    TNodeType type;
+    std::shared_ptr<TNode> first_child;
+    std::shared_ptr<TNode> first_sibling;
+    TNode_type type;
 };
 
 class PKB {
@@ -92,9 +92,9 @@ public:
         this->parser = std::move(parser);
     }
 
-    std::vector<std::shared_ptr<Node>> get_TNode_children(std::shared_ptr<TNode> TNode) {
+    std::vector<std::shared_ptr<Node>> get_tnode_children_as_node(std::shared_ptr<TNode> TNode) {
         std::vector<std::shared_ptr<Node>> children;
-        switch (TNode->get_node_type()) {
+        switch (TNode->get_tnode_type()) {
             // returning statement list
             case TN_PROCEDURE: {
                 children = std::dynamic_pointer_cast<Procedure>(TNode->get_node())->stmt_list;
@@ -129,12 +129,26 @@ public:
         return children;
     }
 
+    std::vector<std::shared_ptr<TNode>> get_tnode_children(std::shared_ptr<TNode> tnode) {
+        std::vector<std::shared_ptr<TNode>> children;
+        if (tnode->get_first_child() != nullptr) {
+            children.push_back(tnode->get_first_child());
+            std::shared_ptr<TNode> current_child = tnode->get_first_child();
+            while (current_child->get_right_sibling() != nullptr) {
+                current_child = current_child->get_right_sibling();
+                children.push_back((current_child));
+            }
+        }
+
+        return children;
+    }
+
     void set_TNode_children(std::shared_ptr<TNode> parent, std::vector<std::shared_ptr<Node>> children) {
         if (children.size() == 0) { return; }
         else if (children.size() == 1) {
             std::shared_ptr<TNode> first_child = std::make_shared<TNode>(children[0]);
             parent->set_first_child(first_child);
-            set_TNode_children(first_child, get_TNode_children(first_child));
+            set_TNode_children(first_child, get_tnode_children_as_node(first_child));
         }
         else {
             std::shared_ptr<TNode> current_child = std::make_shared<TNode>(children[0]);
@@ -143,10 +157,10 @@ public:
             for (int i = 0; i < children.size() - 1; i++) {
                 next_child = std::make_shared<TNode>(children[i + 1]);
                 current_child->set_right_sibling(next_child);
-                set_TNode_children(current_child, get_TNode_children(current_child));
+                set_TNode_children(current_child, get_tnode_children_as_node(current_child));
                 current_child = next_child;
             }
-            set_TNode_children(current_child, get_TNode_children(current_child));
+            set_TNode_children(current_child, get_tnode_children_as_node(current_child));
         }
     }
 
@@ -157,7 +171,7 @@ public:
         }
 
         auto rootNode = std::make_shared<TNode>(parser->parse_procedure());
-        set_TNode_children(rootNode, get_TNode_children(rootNode));
+        set_TNode_children(rootNode, get_tnode_children_as_node(rootNode));
 
         return rootNode;
     }
@@ -170,6 +184,81 @@ public:
     // void store_procedure(std::shared_ptr<Procedure> procedure) {
     //     procedure_list.push_back(std::move(procedure));
     // }
+
+    // node relations
+    bool is_statement(std::shared_ptr<TNode> node) {
+        if (node->get_tnode_type() == TN_ASSIGN || node->get_tnode_type() == TN_WHILE)
+            return true;
+        return false;
+    }
+
+    bool parent(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+        if (node1->get_tnode_type() == TN_FACTOR) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Factor node can't be a parent.");
+        }
+
+        if (node1->get_first_child() == node2) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    bool follows(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+        if (!is_statement(node1)) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Node1 is not a statement node.");
+        } else if (!is_statement(node2)) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Node2 is not a statement node.");
+        }
+
+        if (node1->get_right_sibling() == node2) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+    bool can_modify(std::shared_ptr<TNode> node) {
+        switch (node->get_tnode_type()) {
+            case TN_ASSIGN:
+            case TN_WHILE:
+            case TN_PROCEDURE:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    bool modifies(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+        if (node2->get_tnode_type() != TN_FACTOR) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Only factor can be modified.");
+        }
+        bool result;
+        switch (node1->get_tnode_type()) {
+            case TN_PROCEDURE:
+            case TN_WHILE: {
+                for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+                    if (modifies(child, node2)) { return true; }
+                }
+                return false;
+                break;
+            }
+            case TN_ASSIGN: {
+                if (node1->get_first_child() == node2) {
+                    return true;
+                }
+                else {
+                    return false;
+                }
+                break;
+            }
+            default: {
+                fatal_error(__PRETTY_FUNCTION__, __LINE__, "Node1 can't modify.");
+            }
+        }
+    }
 
 private:
     std::shared_ptr<Parser> parser;
