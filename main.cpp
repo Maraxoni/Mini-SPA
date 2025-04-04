@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 
-#include "parser.h"
+//#include "parser.h"
+#include "pkb.h"
 
 int main() {
     int input;
@@ -18,6 +19,7 @@ int main() {
         }
         case 2: {
             std::cout << "PKB: " << std::endl;
+            pkb::test();
             //
             break;
         }
