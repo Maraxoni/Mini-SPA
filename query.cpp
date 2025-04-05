@@ -44,18 +44,29 @@ namespace query {
         while (std::getline(inputFile, line)) {
             if (std::regex_match(line, match, pattern)) {
                 std::cout << "Matched line: " << line << "\n";
-                std::cout << "  Select: " << match[1] << "\n";
-                std::cout << "  Relation: " << match[2] << "\n";
-                std::cout << "  Param1: " << match[3] << "\n";
-                std::cout << "  Param2: " << match[4] << "\n";
-                if (match[5].matched) {
-                    std::cout << "  With synonym: " << match[5] << "\n";
-                    std::cout << "  Attribute: " << match[6] << "\n";
-                    std::cout << "  Value: ";
-                    if (match[7].matched) std::cout << "\"" << match[7] << "\"\n"; // tekst
-                    else if (match[8].matched) std::cout << match[8] << "\n"; // liczba
-                    else if (match[9].matched) std::cout << match[9] << "\n"; // identyfikator
+
+                // Match values
+                std::string select = match[1];
+                std::string relation = match[2];
+                std::string param1 = match[3];
+                std::string param2 = match[4];
+
+                // Variables for "with" if exists
+                std::string synonym = match[5].matched ? match[5].str() : "";
+                std::string attribute = match[6].matched ? match[6].str() : "";
+                std::string value = "";
+
+                // Match values if exists
+                if (match[7].matched) {
+                    value = match[7]; // text
+                } else if (match[8].matched) {
+                    value = match[8]; // int
+                } else if (match[9].matched) {
+                    value = match[9]; // id
                 }
+
+                // Processing relation
+                processRelation(select, relation, param1, param2, synonym, attribute, value);
             } else {
                 std::cout << "No match: " << line << "\n";
             }
@@ -66,5 +77,45 @@ namespace query {
         outputFile.close();
 
         std::cout << "Processing complete. Files saved." << outputFilePath << std::endl;
+    }
+
+    void processRelation(const std::string &select, const std::string &relation,
+                         const std::string &param1, const std::string &param2,
+                         const std::string &synonym, const std::string &attribute,
+                         const std::string &value) {
+        std::cout << "Processing Relation:\n";
+        std::cout << "  Select: " << select << "\n";
+        std::cout << "  Relation: " << relation << "\n";
+        std::cout << "  Param1: " << param1 << "\n";
+        std::cout << "  Param2: " << param2 << "\n";
+
+        if (relation == "Follows") {
+            std::cout << "Relation type: " << relation << "\n";
+            //Follows();
+        } else if (relation == "Follow*") {
+            std::cout << "Relation type: " << relation << "\n";
+            //Follow*();
+        } else if (relation == "Parent") {
+            std::cout << "Relation type: " << relation << "\n";
+            //Parent();
+        } else if (relation == "Parent*") {
+            std::cout << "Relation type: " << relation << "\n";
+            //Parent*();
+        } else if (relation == "Modifies") {
+            std::cout << "Relation type: " << relation << "\n";
+            //Modifies();
+        } else if (relation == "Uses") {
+            std::cout << "Relation type: " << relation << "\n";
+            //Uses();
+        } else {
+            std::cout << "Unknown relation type\n";
+        }
+
+        // Additional info for "with"
+        if (!synonym.empty()) {
+            std::cout << "  With synonym: " << synonym << "\n";
+            std::cout << "  Attribute: " << attribute << "\n";
+            std::cout << "  Value: " << value << "\n";
+        }
     }
 }
