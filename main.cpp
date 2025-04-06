@@ -2,6 +2,7 @@
 
 //#include "parser.h"
 #include "pkb.h"
+#include "query.h"
 
 int main() {
     int input;
@@ -25,7 +26,7 @@ int main() {
         }
         case 3: {
             std::cout << "Query: " << std::endl;
-            //
+            query::processQueries();
             break;
         }
     }
