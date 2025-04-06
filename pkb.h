@@ -2,37 +2,37 @@
 #define MINISPA_PKB_H
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "nodes.h"
 #include "parser.h"
 
 enum TNode_type : int {
-  TN_PROCEDURE,
-  TN_WHILE,
-  TN_ASSIGN,
-  TN_EXPRESSION,
-  TN_FACTOR
+    TN_PROCEDURE,
+    TN_WHILE,
+    TN_ASSIGN,
+    TN_EXPRESSION,
+    TN_FACTOR
 };
 
 class TNode {
 public:
-    TNode(std::shared_ptr<Node>node) {
+    explicit TNode(std::shared_ptr<Node> node) {
         this->node = std::move(node);
         this->set_tnode_type();
     }
 
-    std::string to_string()
-    {
+    std::string to_string() {
         return node->to_string();
     }
 
     std::shared_ptr<Node> get_node() {
-      return node;
+        return node;
     }
 
     void set_first_child(std::shared_ptr<TNode> child) {
-      this->first_child = child;
+        this->first_child = std::move(child);
     }
 
     std::shared_ptr<TNode> get_first_child() {
@@ -40,14 +40,14 @@ public:
     }
 
     void set_right_sibling(std::shared_ptr<TNode> sibling) {
-        this->first_sibling = sibling;
+        this->first_sibling = std::move(sibling);
     }
 
     std::shared_ptr<TNode> get_right_sibling() {
         return first_sibling;
     }
 
-    void set_tnode_type(){
+    void set_tnode_type() {
         if (std::dynamic_pointer_cast<Procedure>(node)) {
             type = TN_PROCEDURE;
         } else if (std::dynamic_pointer_cast<WhileStmt>(node)) {
@@ -61,8 +61,8 @@ public:
         }
     }
 
-    TNode_type get_tnode_type(){
-      return type;
+    TNode_type get_tnode_type() {
+        return type;
     }
 
     std::vector<std::shared_ptr<Node>> get_stmt_list() {
@@ -71,9 +71,9 @@ public:
             return procedure->stmt_list;
         } else if (auto whileStmt = std::dynamic_pointer_cast<WhileStmt>(node)) {
             return whileStmt->stmt_list;
-        }
-        else {
-            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Tried getting statement list from node which doesn't have one.");
+        } else {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__,
+                        "Tried getting statement list from node which doesn't have one.");
             return {};
         }
     }
@@ -83,7 +83,7 @@ private:
     std::shared_ptr<Node> node;
     std::shared_ptr<TNode> first_child;
     std::shared_ptr<TNode> first_sibling;
-    TNode_type type;
+    TNode_type type{};
 };
 
 class PKB {
@@ -92,7 +92,7 @@ public:
         this->parser = std::move(parser);
     }
 
-    std::vector<std::shared_ptr<Node>> get_tnode_children_as_node(std::shared_ptr<TNode> TNode) {
+    std::vector<std::shared_ptr<Node>> get_tnode_children_as_node(const std::shared_ptr<TNode> &TNode) {
         std::vector<std::shared_ptr<Node>> children;
         switch (TNode->get_tnode_type()) {
             // returning statement list
@@ -100,27 +100,29 @@ public:
                 children = std::dynamic_pointer_cast<Procedure>(TNode->get_node())->stmt_list;
                 break;
             }
-            // returning conditional variable and statement list
+                // returning conditional variable and statement list
             case TN_WHILE: {
-                children.push_back(std::make_shared<Factor>(std::dynamic_pointer_cast<WhileStmt>(TNode->get_node())->var_name));
-                for (std::shared_ptr<Node> node : std::dynamic_pointer_cast<WhileStmt>(TNode->get_node())->stmt_list) {
+                children.push_back(
+                        std::make_shared<Factor>(std::dynamic_pointer_cast<WhileStmt>(TNode->get_node())->var_name));
+                for (std::shared_ptr<Node> node: std::dynamic_pointer_cast<WhileStmt>(TNode->get_node())->stmt_list) {
                     children.push_back(node);
                 }
                 break;
             }
-            // returning variable and expression
+                // returning variable and expression
             case TN_ASSIGN: {
-                children.push_back(std::make_shared<Factor>(std::dynamic_pointer_cast<Assign>(TNode->get_node())->var_name));
+                children.push_back(
+                        std::make_shared<Factor>(std::dynamic_pointer_cast<Assign>(TNode->get_node())->var_name));
                 children.push_back(std::dynamic_pointer_cast<Assign>(TNode->get_node())->expr);
                 break;
             }
-            // returning left and right piece of expression
+                // returning left and right piece of expression
             case TN_EXPRESSION: {
                 children.push_back(std::dynamic_pointer_cast<Expr>(TNode->get_node())->left);
                 children.push_back(std::dynamic_pointer_cast<Expr>(TNode->get_node())->right);
-            break;
+                break;
             }
-            // factor can't have children, returning empty list
+                // factor can't have children, returning empty list
             case TN_FACTOR: {
                 break;
             }
@@ -129,7 +131,7 @@ public:
         return children;
     }
 
-    std::vector<std::shared_ptr<TNode>> get_tnode_children(std::shared_ptr<TNode> tnode) {
+    std::vector<std::shared_ptr<TNode>> get_tnode_children(const std::shared_ptr<TNode> &tnode) {
         std::vector<std::shared_ptr<TNode>> children;
         if (tnode->get_first_child() != nullptr) {
             children.push_back(tnode->get_first_child());
@@ -143,14 +145,13 @@ public:
         return children;
     }
 
-    void set_tnode_children(std::shared_ptr<TNode> parent, std::vector<std::shared_ptr<Node>> children) {
-        if (children.size() == 0) { return; }
+    void set_tnode_children(const std::shared_ptr<TNode> &parent, std::vector<std::shared_ptr<Node>> children) {
+        if (children.empty()) return;
         else if (children.size() == 1) {
             std::shared_ptr<TNode> first_child = std::make_shared<TNode>(children[0]);
             parent->set_first_child(first_child);
             set_tnode_children(first_child, get_tnode_children_as_node(first_child));
-        }
-        else {
+        } else {
             std::shared_ptr<TNode> current_child = std::make_shared<TNode>(children[0]);
             std::shared_ptr<TNode> next_child;
             parent->set_first_child(current_child);
@@ -186,18 +187,18 @@ public:
     // }
 
     // node relations
-    bool is_statement(std::shared_ptr<TNode> node) {
+    bool is_statement(const std::shared_ptr<TNode> &node) {
         if (node->get_tnode_type() == TN_ASSIGN || node->get_tnode_type() == TN_WHILE)
             return true;
         return false;
     }
 
-    bool parent(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+    bool parent(const std::shared_ptr<TNode> &node1, const std::shared_ptr<TNode> &node2) {
         if (node1->get_tnode_type() == TN_FACTOR) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Factor node can't be a parent.");
         }
 
-        for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+        for (std::shared_ptr<TNode> child: get_tnode_children(node1)) {
             if (child == node2) {
                 return true;
             }
@@ -206,13 +207,13 @@ public:
         return false;
     }
 
-    bool parentT(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+    bool parentT(const std::shared_ptr<TNode> &node1, const std::shared_ptr<TNode> &node2) {
         if (node1->get_tnode_type() == TN_FACTOR) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Factor node can't be a parent.");
         }
 
         bool result = false;
-        for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+        for (std::shared_ptr<TNode> child: get_tnode_children(node1)) {
             if (child == node2) {
                 return true;
             } else {
@@ -222,7 +223,7 @@ public:
         return result;
     }
 
-    bool follows(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+    bool follows(const std::shared_ptr<TNode> &node1, const std::shared_ptr<TNode> &node2) {
         if (!is_statement(node1)) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Node1 is not a statement node.");
         } else if (!is_statement(node2)) {
@@ -231,13 +232,12 @@ public:
 
         if (node1->get_right_sibling() == node2) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    bool followsT(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+    bool followsT(const std::shared_ptr<TNode> &node1, const std::shared_ptr<TNode> &node2) {
         if (!is_statement(node1)) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Node1 is not a statement node.");
         } else if (!is_statement(node2)) {
@@ -253,7 +253,7 @@ public:
         return result;
     }
 
-    bool can_modify(std::shared_ptr<TNode> node) {
+    bool can_modify(const std::shared_ptr<TNode> &node) {
         switch (node->get_tnode_type()) {
             case TN_ASSIGN:
             case TN_WHILE:
@@ -264,14 +264,14 @@ public:
         }
     }
 
-    bool modifies(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+    bool modifies(const std::shared_ptr<TNode> &node1, const std::shared_ptr<TNode> &node2) {
         if (node2->get_tnode_type() != TN_FACTOR) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Only factor can be modified.");
         }
         switch (node1->get_tnode_type()) {
-            case TN_PROCEDURE: 
+            case TN_PROCEDURE:
             case TN_WHILE: {
-                for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+                for (std::shared_ptr<TNode> child: get_tnode_children(node1)) {
                     if (modifies(child, node2)) { return true; }
                 }
                 return false;
@@ -280,8 +280,7 @@ public:
             case TN_ASSIGN: {
                 if (node1->get_first_child() == node2) {
                     return true;
-                }
-                else {
+                } else {
                     return false;
                 }
                 break;
@@ -292,23 +291,23 @@ public:
         }
     }
 
-    bool uses(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+    bool uses(const std::shared_ptr<TNode> &node1, const std::shared_ptr<TNode> &node2) {
         if (node2->get_tnode_type() != TN_FACTOR) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Only factor can be used.");
         }
         switch (node1->get_tnode_type()) {
-            case TN_PROCEDURE:{
-                for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+            case TN_PROCEDURE: {
+                for (std::shared_ptr<TNode> child: get_tnode_children(node1)) {
                     if (uses(child, node2)) { return true; }
                 }
                 return false;
                 break;
             }
             case TN_WHILE: {
-                if (node1->get_first_child() == node2) { return true;}
+                if (node1->get_first_child() == node2) { return true; }
                 std::vector<std::shared_ptr<TNode>> children = get_tnode_children(node1);
                 children.erase(children.begin()); // ignoring first child (conditional variable)
-                for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+                for (std::shared_ptr<TNode> child: get_tnode_children(node1)) {
                     if (uses(child, node2)) { return true; }
                 }
                 return false;
@@ -319,8 +318,7 @@ public:
                 if (child->get_tnode_type() == TN_FACTOR) {
                     if (child == node2) {
                         return true;
-                    }
-                    else {
+                    } else {
                         return false;
                     }
                 } else { // child is expression
@@ -331,7 +329,7 @@ public:
             }
             case TN_EXPRESSION: {
                 bool result = false;
-                for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+                for (std::shared_ptr<TNode> child: get_tnode_children(node1)) {
                     if (child->get_tnode_type() == TN_FACTOR) {
                         if (child == node2) {
                             result = true;
