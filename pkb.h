@@ -197,12 +197,29 @@ public:
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Factor node can't be a parent.");
         }
 
-        if (node1->get_first_child() == node2) {
-            return true;
+        for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+            if (child == node2) {
+                return true;
+            }
         }
-        else {
-            return false;
+
+        return false;
+    }
+
+    bool parentT(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+        if (node1->get_tnode_type() == TN_FACTOR) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Factor node can't be a parent.");
         }
+
+        bool result = false;
+        for (std::shared_ptr<TNode> child : get_tnode_children(node1)) {
+            if (child == node2) {
+                return true;
+            } else {
+                result = parentT(child, node2) ? true : result;
+            }
+        }
+        return result;
     }
 
     bool follows(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
