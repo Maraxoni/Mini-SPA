@@ -10,6 +10,8 @@ void pkb::test() {
     PKB pkb = PKB(parser);
     auto ast = pkb.build_AST();
 
+    auto asdsad = pkb.get_ast_as_list(ast);
+
     std::shared_ptr<TNode> tmp = ast;
     while (tmp->get_first_child() != nullptr) {
         tmp = tmp->get_first_child();
