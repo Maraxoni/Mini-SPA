@@ -1,3 +1,6 @@
+#ifndef PARSER_H
+#define PARSER_H
+
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -342,4 +345,4 @@ namespace parser {
     void test1();
 }
 
-
+#endif

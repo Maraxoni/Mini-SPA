@@ -8,6 +8,9 @@
 #include <bits/fs_fwd.h>
 #include <bits/fs_path.h>
 
+#include "parser.h"
+#include "pkb.h"
+
 namespace query {
     void processQueries() {
         // Relative file path
@@ -29,6 +32,12 @@ namespace query {
         std::ofstream outputFile(outputFilePath);
         if (!outputFile.is_open()) {
             std::cerr << "Error when opening output file!" << std::endl;
+            return;
+        }
+
+        std::string path = "../files/input_min.txt";
+        auto parser = std::make_shared<Parser>();
+        if (!parser->initialize_by_file(path)) {
             return;
         }
 
@@ -89,33 +98,98 @@ namespace query {
         std::cout << "  Param1: " << param1 << "\n";
         std::cout << "  Param2: " << param2 << "\n";
 
-        if (relation == "Follows") {
-            std::cout << "Relation type: " << relation << "\n";
-            //Follows();
-        } else if (relation == "Follow*") {
-            std::cout << "Relation type: " << relation << "\n";
-            //Follow*();
-        } else if (relation == "Parent") {
-            std::cout << "Relation type: " << relation << "\n";
-            //Parent();
-        } else if (relation == "Parent*") {
-            std::cout << "Relation type: " << relation << "\n";
-            //Parent*();
-        } else if (relation == "Modifies") {
-            std::cout << "Relation type: " << relation << "\n";
-            //Modifies();
-        } else if (relation == "Uses") {
-            std::cout << "Relation type: " << relation << "\n";
-            //Uses();
-        } else {
-            std::cout << "Unknown relation type\n";
-        }
-
         // Additional info for "with"
         if (!synonym.empty()) {
             std::cout << "  With synonym: " << synonym << "\n";
             std::cout << "  Attribute: " << attribute << "\n";
             std::cout << "  Value: " << value << "\n";
+        }
+
+        std::string path = "../files/input_min.txt";
+        auto parser = std::make_shared<Parser>();
+        if (!parser->initialize_by_file(path)) {
+            return;
+        }
+
+        PKB pkb = PKB(parser);
+
+        std::shared_ptr<TNode> rootNode = pkb.build_AST();
+
+        std::vector<std::shared_ptr<TNode> > procedureNodes;
+        std::vector<std::shared_ptr<TNode> > whileNodes;
+        std::vector<std::shared_ptr<TNode> > assignNodes;
+        std::vector<std::shared_ptr<TNode> > exprNodes;
+        std::vector<std::shared_ptr<TNode> > factorNodes;
+
+        std::vector<std::shared_ptr<TNode> > allNodes;
+        for (const auto &node: allNodes) {
+            if (node->get_tnode_type() == TN_PROCEDURE) {
+                procedureNodes.push_back(node);
+            }
+            if (node->get_tnode_type() == TN_WHILE) {
+                whileNodes.push_back(node);
+            }
+            if (node->get_tnode_type() == TN_ASSIGN) {
+                assignNodes.push_back(node);
+            } else if (node->get_tnode_type() == TN_EXPRESSION) {
+                exprNodes.push_back(node);
+            } else if (node->get_tnode_type() == TN_FACTOR) {
+                factorNodes.push_back(node);
+            }
+        }
+
+        if (relation == "Follows") {
+            std::cout << "Checking Follows relation\n";
+            if (select == param1) {
+                for (const auto &node1: exprNodes) {
+                    for (const auto &node2: exprNodes) {
+                        if (pkb.follows(node1, node2)) {
+                            std::cout << "Node " << node1->to_string() << " follows " << node2->to_string() << "\n";
+                        }
+                    }
+                }
+            } else if (select == param2) {
+                for (const auto &node1: whileNodes) {
+                    for (const auto &node2: whileNodes) {
+                        if (pkb.follows(node1, node2)) {
+                            std::cout << "Node " << node1->to_string() << " follows " << node2->to_string() << "\n";
+                        }
+                    }
+                }
+            } else {
+            }
+        } else if (relation == "Follows*") {
+            std::cout << "Checking Follows* relation\n";
+            if (select == param1) {
+            } else if (select == param2) {
+            } else {
+            }
+        } else if (relation == "Parent") {
+            std::cout << "Checking Parent relation\n";
+            if (select == param1) {
+            } else if (select == param2) {
+            } else {
+            }
+        } else if (relation == "Parent*") {
+            std::cout << "Checking Parent* relation\n";
+            if (select == param1) {
+            } else if (select == param2) {
+            } else {
+            }
+        } else if (relation == "Modifies") {
+            std::cout << "Checking Modifies relation\n";
+            if (select == param1) {
+            } else if (select == param2) {
+            } else {
+            }
+        } else if (relation == "Uses") {
+            std::cout << "Checking Uses relation\n";
+            if (select == param1) {
+            } else if (select == param2) {
+            } else {
+            }
+        } else {
+            std::cout << "Unknown relation type\n";
         }
     }
 }
