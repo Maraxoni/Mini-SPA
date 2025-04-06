@@ -237,6 +237,22 @@ public:
         }
     }
 
+    bool followsT(std::shared_ptr<TNode> node1, std::shared_ptr<TNode> node2) {
+        if (!is_statement(node1)) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Node1 is not a statement node.");
+        } else if (!is_statement(node2)) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Node2 is not a statement node.");
+        }
+
+        bool result = false;
+        if (node1->get_right_sibling() == node2) {
+            return true;
+        } else if (node1->get_right_sibling() != nullptr) {
+            result = followsT(node1->get_right_sibling(), node2) ? true : result;
+        }
+        return result;
+    }
+
     bool can_modify(std::shared_ptr<TNode> node) {
         switch (node->get_tnode_type()) {
             case TN_ASSIGN:
