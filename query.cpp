@@ -92,6 +92,7 @@ namespace query {
                          const std::string &param1, const std::string &param2,
                          const std::string &synonym, const std::string &attribute,
                          const std::string &value) {
+        // Printing info
         std::cout << "Processing Relation:\n";
         std::cout << "  Select: " << select << "\n";
         std::cout << "  Relation: " << relation << "\n";
@@ -104,24 +105,24 @@ namespace query {
             std::cout << "  Attribute: " << attribute << "\n";
             std::cout << "  Value: " << value << "\n";
         }
-
+        // Loading code file
         std::string path = "../files/input_min.txt";
         auto parser = std::make_shared<Parser>();
         if (!parser->initialize_by_file(path)) {
             return;
         }
-
+        // Using pkb class object
         PKB pkb = PKB(parser);
-
         std::shared_ptr<TNode> rootNode = pkb.build_AST();
-
+        std::vector<std::shared_ptr<TNode> > allNodes = pkb.get_ast_as_list(rootNode);
+        // Lists of nodes of certain types
         std::vector<std::shared_ptr<TNode> > procedureNodes;
         std::vector<std::shared_ptr<TNode> > whileNodes;
         std::vector<std::shared_ptr<TNode> > assignNodes;
         std::vector<std::shared_ptr<TNode> > exprNodes;
         std::vector<std::shared_ptr<TNode> > factorNodes;
 
-        std::vector<std::shared_ptr<TNode> > allNodes;
+        // Checking types and filling lists with nodes
         for (const auto &node: allNodes) {
             if (node->get_tnode_type() == TN_PROCEDURE) {
                 procedureNodes.push_back(node);
@@ -138,17 +139,11 @@ namespace query {
             }
         }
 
+        // Checking relation types and running functions
         if (relation == "Follows") {
             std::cout << "Checking Follows relation\n";
             if (select == param1) {
-                for (const auto &node1: exprNodes) {
-                    for (const auto &node2: exprNodes) {
-                        if (pkb.follows(node1, node2)) {
-                            std::cout << "Node " << node1->to_string() << " follows " << node2->to_string() << "\n";
-                        }
-                    }
-                }
-            } else if (select == param2) {
+                // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: whileNodes) {
                     for (const auto &node2: whileNodes) {
                         if (pkb.follows(node1, node2)) {
@@ -156,37 +151,138 @@ namespace query {
                         }
                     }
                 }
+            } else if (select == param2) {
+                // For select == param2: Finding node 1 that comes before node 2
+                for (const auto &node2: whileNodes) {
+                    for (const auto &node1: whileNodes) {
+                        if (pkb.follows(node1, node2)) {
+                            std::cout << "Node " << node2->to_string() << " is followed by " << node1->to_string() <<
+                                    "\n";
+                        }
+                    }
+                }
             } else {
+                std::cout << "No follows relation\n";
             }
         } else if (relation == "Follows*") {
             std::cout << "Checking Follows* relation\n";
             if (select == param1) {
+                // For select == param1: Finding node 2 that comes after node 1
+                for (const auto &node1: whileNodes) {
+                    for (const auto &node2: whileNodes) {
+                        if (pkb.followsT(node1, node2)) {
+                            std::cout << "Node " << node1->to_string() << " follows* " << node2->to_string() << "\n";
+                        }
+                    }
+                }
             } else if (select == param2) {
+                // For select == param2: Finding node 1 that comes before node 2
+                for (const auto &node2: whileNodes) {
+                    for (const auto &node1: whileNodes) {
+                        if (pkb.followsT(node1, node2)) {
+                            std::cout << "Node " << node2->to_string() << " is followed* by " << node1->to_string() <<
+                                    "\n";
+                        }
+                    }
+                }
             } else {
+                std::cout << "No follows* relation\n";
             }
         } else if (relation == "Parent") {
             std::cout << "Checking Parent relation\n";
             if (select == param1) {
+                // For select == param1: Finding node 2 that comes after node 1
+                for (const auto &node1: exprNodes) {
+                    for (const auto &node2: exprNodes) {
+                        if (pkb.parent(node1, node2)) {
+                            std::cout << "Node " << node1->to_string() << " is parent of " << node2->to_string() <<
+                                    "\n";
+                        }
+                    }
+                }
             } else if (select == param2) {
+                // For select == param2: Finding node 1 that comes before node 2
+                for (const auto &node2: exprNodes) {
+                    for (const auto &node1: exprNodes) {
+                        if (pkb.parent(node1, node2)) {
+                            std::cout << "Node " << node2->to_string() << " is child of " << node1->to_string() << "\n";
+                        }
+                    }
+                }
             } else {
+                std::cout << "No parent relation\n";
             }
         } else if (relation == "Parent*") {
             std::cout << "Checking Parent* relation\n";
             if (select == param1) {
+                // For select == param1: Finding node 2 that comes after node 1
+                for (const auto &node1: exprNodes) {
+                    for (const auto &node2: exprNodes) {
+                        if (pkb.parentT(node1, node2)) {
+                            std::cout << "Node " << node1->to_string() << " is parent* of " << node2->to_string() <<
+                                    "\n";
+                        }
+                    }
+                }
             } else if (select == param2) {
+                // For select == param2: Finding node 1 that comes before node 2
+                for (const auto &node2: exprNodes) {
+                    for (const auto &node1: exprNodes) {
+                        if (pkb.parentT(node1, node2)) {
+                            std::cout << "Node " << node2->to_string() << " is child* of " << node1->to_string() <<
+                                    "\n";
+                        }
+                    }
+                }
             } else {
+                std::cout << "No parent* relation\n";
             }
         } else if (relation == "Modifies") {
             std::cout << "Checking Modifies relation\n";
             if (select == param1) {
+                // For select == param1: Finding node 2 that comes after node 1
+                for (const auto &node1: exprNodes) {
+                    for (const auto &node2: factorNodes) {
+                        if (pkb.modifies(node1, node2)) {
+                            std::cout << "Node " << node1->to_string() << " modifies " << node2->to_string() << "\n";
+                        }
+                    }
+                }
             } else if (select == param2) {
+                // For select == param2: Finding node 1 that comes before node 2
+                for (const auto &node2: factorNodes) {
+                    for (const auto &node1: exprNodes) {
+                        if (pkb.modifies(node1, node2)) {
+                            std::cout << "Node " << node2->to_string() << " is modified by " << node1->to_string() <<
+                                    "\n";
+                        }
+                    }
+                }
             } else {
+                std::cout << "No modifies relation\n";
             }
         } else if (relation == "Uses") {
             std::cout << "Checking Uses relation\n";
             if (select == param1) {
+                // For select == param1: Finding node 2 that comes after node 1
+                for (const auto &node1: exprNodes) {
+                    for (const auto &node2: exprNodes) {
+                        if (pkb.uses(node1, node2)) {
+                            std::cout << "Node " << node1->to_string() << " uses " << node2->to_string() << "\n";
+                        }
+                    }
+                }
             } else if (select == param2) {
+                // For select == param2: Finding node 1 that comes before node 2
+                for (const auto &node2: exprNodes) {
+                    for (const auto &node1: exprNodes) {
+                        if (pkb.uses(node1, node2)) {
+                            std::cout << "Node " << node2->to_string() << " is used by " << node1->to_string() << "\n";
+                        }
+                    }
+                }
             } else {
+                std::cout << "No uses relation\n";
             }
         } else {
             std::cout << "Unknown relation type\n";
