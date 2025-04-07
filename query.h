@@ -9,11 +9,12 @@ namespace query {
     // Query processing function
     void processQueries();
 
-    void processRelation(const std::string &select, const std::string &relation,
+    void processRelation(std::ofstream &processRelationFile, const std::string &select, const std::string &relation,
                          const std::string &param1, const std::string &param2,
                          const std::string &synonym = "", const std::string &attribute = "",
                          const std::string &value = "");
-    std::vector<std::shared_ptr<TNode>> getAllNodes(std::shared_ptr<TNode> currentRoot);
+
+    std::vector<std::shared_ptr<TNode> > getAllNodes(std::shared_ptr<TNode> currentRoot);
 }
 
 #endif //QUERY_H

@@ -35,12 +35,6 @@ namespace query {
             return;
         }
 
-        std::string path = "../files/input_min.txt";
-        auto parser = std::make_shared<Parser>();
-        if (!parser->initialize_by_file(path)) {
-            return;
-        }
-
         // Loaded line
         std::string line;
         // Searching pattern
@@ -75,20 +69,20 @@ namespace query {
                 }
 
                 // Processing relation
-                processRelation(select, relation, param1, param2, synonym, attribute, value);
+                processRelation(outputFile, select, relation, param1, param2, synonym, attribute, value);
             } else {
                 std::cout << "No match: " << line << "\n";
             }
         }
 
-        // Close files
+        // Closing files
         inputFile.close();
         outputFile.close();
 
         std::cout << "Processing complete. Files saved." << outputFilePath << std::endl;
     }
 
-    void processRelation(const std::string &select, const std::string &relation,
+    void processRelation(std::ofstream &processRelationFile, const std::string &select, const std::string &relation,
                          const std::string &param1, const std::string &param2,
                          const std::string &synonym, const std::string &attribute,
                          const std::string &value) {
@@ -106,7 +100,7 @@ namespace query {
             std::cout << "  Value: " << value << "\n";
         }
         // Loading code file
-        std::string path = "../files/input_min.txt";
+        std::string path = "../files/input_min2.txt";
         auto parser = std::make_shared<Parser>();
         if (!parser->initialize_by_file(path)) {
             return;
@@ -122,7 +116,7 @@ namespace query {
         std::vector<std::shared_ptr<TNode> > exprNodes;
         std::vector<std::shared_ptr<TNode> > factorNodes;
 
-        // Checking types and filling lists with nodes
+        // Checking node types and filling lists with nodes
         for (const auto &node: allNodes) {
             if (node->get_tnode_type() == TN_PROCEDURE) {
                 procedureNodes.push_back(node);
@@ -138,6 +132,14 @@ namespace query {
                 factorNodes.push_back(node);
             }
         }
+        // Adding query content to file
+        processRelationFile << "Query result for: Select " << select << " such that " << relation << " (" << param1 <<
+                ","
+                << param2 << ")";
+        if (!synonym.empty()) {
+            processRelationFile << " with " << synonym << "." << attribute << "= " << value;
+        }
+        processRelationFile << "\n";
 
         // Checking relation types and running functions
         if (relation == "Follows") {
@@ -147,7 +149,27 @@ namespace query {
                 for (const auto &node1: whileNodes) {
                     for (const auto &node2: whileNodes) {
                         if (pkb.follows(node1, node2)) {
-                            std::cout << "Node " << node1->to_string() << " follows " << node2->to_string() << "\n";
+                            if (!synonym.empty()) {
+                                if (synonym == param1) {
+                                    if (node1->get_command_no() == std::stoi(value)) {
+                                        processRelationFile << "Node " << node1->get_command_no() << " follows* " <<
+                                                node2->
+                                                get_command_no()
+                                                << "\n";
+                                    }
+                                } else if (synonym == param2) {
+                                    if (node2->get_command_no() == std::stoi(value)) {
+                                        processRelationFile << "Node " << node1->get_command_no() << " follows* " <<
+                                                node2->
+                                                get_command_no()
+                                                << "\n";
+                                    }
+                                }
+                            } else {
+                                processRelationFile << "Node " << node1->get_command_no() << " follows* " << node2->
+                                        get_command_no()
+                                        << "\n";
+                            }
                         }
                     }
                 }
@@ -156,8 +178,28 @@ namespace query {
                 for (const auto &node2: whileNodes) {
                     for (const auto &node1: whileNodes) {
                         if (pkb.follows(node1, node2)) {
-                            std::cout << "Node " << node2->to_string() << " is followed by " << node1->to_string() <<
-                                    "\n";
+                            if (!synonym.empty()) {
+                                if (synonym == param1) {
+                                    if (node1->get_command_no() == std::stoi(value)) {
+                                        processRelationFile << "Node " << node2->get_command_no() << " is followed by "
+                                                << node1->
+                                                get_command_no() <<
+                                                "\n";
+                                    }
+                                } else if (synonym == param2) {
+                                    if (node2->get_command_no() == std::stoi(value)) {
+                                        processRelationFile << "Node " << node2->get_command_no() << " is followed by "
+                                                << node1->
+                                                get_command_no() <<
+                                                "\n";
+                                    }
+                                }
+                            } else {
+                                processRelationFile << "Node " << node2->get_command_no() << " is followed by " << node1
+                                        ->
+                                        get_command_no() <<
+                                        "\n";
+                            }
                         }
                     }
                 }
@@ -171,7 +213,27 @@ namespace query {
                 for (const auto &node1: whileNodes) {
                     for (const auto &node2: whileNodes) {
                         if (pkb.followsT(node1, node2)) {
-                            std::cout << "Node " << node1->to_string() << " follows* " << node2->to_string() << "\n";
+                            if (!synonym.empty()) {
+                                if (synonym == param1) {
+                                    if (node1->get_command_no() == std::stoi(value)) {
+                                        processRelationFile << "Node " << node1->get_command_no() << " follows* " <<
+                                                node2->
+                                                get_command_no()
+                                                << "\n";
+                                    }
+                                } else if (synonym == param2) {
+                                    if (node2->get_command_no() == std::stoi(value)) {
+                                        processRelationFile << "Node " << node1->get_command_no() << " follows* " <<
+                                                node2->
+                                                get_command_no()
+                                                << "\n";
+                                    }
+                                }
+                            } else {
+                                processRelationFile << "Node " << node1->get_command_no() << " follows* " << node2->
+                                        get_command_no()
+                                        << "\n";
+                            }
                         }
                     }
                 }
@@ -180,8 +242,28 @@ namespace query {
                 for (const auto &node2: whileNodes) {
                     for (const auto &node1: whileNodes) {
                         if (pkb.followsT(node1, node2)) {
-                            std::cout << "Node " << node2->to_string() << " is followed* by " << node1->to_string() <<
-                                    "\n";
+                            if (!synonym.empty()) {
+                                if (synonym == param1) {
+                                    if (node1->get_command_no() == std::stoi(value)) {
+                                        processRelationFile << "Node " << node2->get_command_no() << " is followed* by "
+                                                << node1->
+                                                get_command_no() <<
+                                                "\n";
+                                    }
+                                } else if (synonym == param2) {
+                                    if (node2->get_command_no() == std::stoi(value)) {
+                                        processRelationFile << "Node " << node2->get_command_no() << " is followed* by "
+                                                << node1->
+                                                get_command_no() <<
+                                                "\n";
+                                    }
+                                }
+                            } else {
+                                processRelationFile << "Node " << node2->get_command_no() << " is followed* by " <<
+                                        node1->
+                                        get_command_no() <<
+                                        "\n";
+                            }
                         }
                     }
                 }
@@ -195,7 +277,8 @@ namespace query {
                 for (const auto &node1: exprNodes) {
                     for (const auto &node2: exprNodes) {
                         if (pkb.parent(node1, node2)) {
-                            std::cout << "Node " << node1->to_string() << " is parent of " << node2->to_string() <<
+                            processRelationFile << "Node " << node1->get_command_no() << " is parent of " << node2->
+                                    get_command_no() <<
                                     "\n";
                         }
                     }
@@ -205,7 +288,8 @@ namespace query {
                 for (const auto &node2: exprNodes) {
                     for (const auto &node1: exprNodes) {
                         if (pkb.parent(node1, node2)) {
-                            std::cout << "Node " << node2->to_string() << " is child of " << node1->to_string() << "\n";
+                            processRelationFile << "Node " << node2->get_command_no() << " is child of " << node1->
+                                    get_command_no() << "\n";
                         }
                     }
                 }
@@ -219,7 +303,8 @@ namespace query {
                 for (const auto &node1: exprNodes) {
                     for (const auto &node2: exprNodes) {
                         if (pkb.parentT(node1, node2)) {
-                            std::cout << "Node " << node1->to_string() << " is parent* of " << node2->to_string() <<
+                            processRelationFile << "Node " << node1->get_command_no() << " is parent* of " << node2->
+                                    get_command_no() <<
                                     "\n";
                         }
                     }
@@ -229,7 +314,8 @@ namespace query {
                 for (const auto &node2: exprNodes) {
                     for (const auto &node1: exprNodes) {
                         if (pkb.parentT(node1, node2)) {
-                            std::cout << "Node " << node2->to_string() << " is child* of " << node1->to_string() <<
+                            processRelationFile << "Node " << node2->get_command_no() << " is child* of " << node1->
+                                    get_command_no() <<
                                     "\n";
                         }
                     }
@@ -244,7 +330,9 @@ namespace query {
                 for (const auto &node1: exprNodes) {
                     for (const auto &node2: factorNodes) {
                         if (pkb.modifies(node1, node2)) {
-                            std::cout << "Node " << node1->to_string() << " modifies " << node2->to_string() << "\n";
+                            processRelationFile << "Node " << node1->get_command_no() << " modifies " << node2->
+                                    get_command_no()
+                                    << "\n";
                         }
                     }
                 }
@@ -253,7 +341,8 @@ namespace query {
                 for (const auto &node2: factorNodes) {
                     for (const auto &node1: exprNodes) {
                         if (pkb.modifies(node1, node2)) {
-                            std::cout << "Node " << node2->to_string() << " is modified by " << node1->to_string() <<
+                            processRelationFile << "Node " << node2->get_command_no() << " is modified by " << node1->
+                                    get_command_no() <<
                                     "\n";
                         }
                     }
@@ -268,7 +357,9 @@ namespace query {
                 for (const auto &node1: exprNodes) {
                     for (const auto &node2: exprNodes) {
                         if (pkb.uses(node1, node2)) {
-                            std::cout << "Node " << node1->to_string() << " uses " << node2->to_string() << "\n";
+                            processRelationFile << "Node " << node1->get_command_no() << " uses " << node2->
+                                    get_command_no() <<
+                                    "\n";
                         }
                     }
                 }
@@ -277,7 +368,9 @@ namespace query {
                 for (const auto &node2: exprNodes) {
                     for (const auto &node1: exprNodes) {
                         if (pkb.uses(node1, node2)) {
-                            std::cout << "Node " << node2->to_string() << " is used by " << node1->to_string() << "\n";
+                            processRelationFile << "Node " << node2->get_command_no() << " is used by " << node1->
+                                    get_command_no()
+                                    << "\n";
                         }
                     }
                 }
