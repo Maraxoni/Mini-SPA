@@ -102,7 +102,7 @@ namespace query {
         }
 
         // Using pkb class object
-        std::shared_ptr<TNode> rootNode = PKB::build_AST();
+        std::shared_ptr<TNode> rootNode = PKB::instance().get_ast();
         std::vector<std::shared_ptr<TNode> > allNodes = PKB::get_ast_as_list(rootNode);
 
         // Lists of nodes of certain types

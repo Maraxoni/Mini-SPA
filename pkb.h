@@ -98,6 +98,27 @@ private:
 
 class PKB {
 public:
+
+    //don't allow copying
+    PKB(PKB const &) = delete;
+
+    void operator=(PKB const &) = delete;
+
+    static PKB &instance() {
+        static PKB instance;
+        return instance;
+    }
+
+
+    //getter for ast
+    [[nodiscard]] std::shared_ptr<TNode> get_ast() const {
+        return rootNode;
+    }
+
+    void initialize() {
+        this->build_AST();
+    }
+
     static std::vector<std::shared_ptr<Node>> get_tnode_children_as_node(const std::shared_ptr<TNode> &TNode) {
         std::vector<std::shared_ptr<Node>> children;
         switch (TNode->get_tnode_type()) {
@@ -172,7 +193,7 @@ public:
     }
 
     static std::vector<std::shared_ptr<TNode>> get_ast_as_list(const std::shared_ptr<TNode> &rootNode,
-                                                        const bool notRootFlag = false) {
+                                                               const bool notRootFlag = false) {
         std::vector<std::shared_ptr<TNode>> result;
         if (notRootFlag == false) { result.push_back(rootNode); }
         for (const auto &child: get_tnode_children(rootNode)) {
@@ -218,19 +239,7 @@ public:
         return command_no;
     }
 
-    [[nodiscard]] static std::shared_ptr<TNode> build_AST() {
-        if (!Parser::instance().initialized) {
-            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Parser is not initialized.");
-            return nullptr;
-        }
 
-        auto rootNode = std::make_shared<TNode>(Parser::instance().parse_procedure());
-        set_tnode_children(rootNode, get_tnode_children_as_node(rootNode));
-
-        assign_command_no(rootNode);
-
-        return rootNode;
-    }
 
     // not necessary for now, maybe will be useful later
     // const std::vector<std::shared_ptr<Procedure>>& get_procedure_list() const {
@@ -400,6 +409,24 @@ public:
 private:
 //    std::shared_ptr<Parser> parser;
     // std::vector<std::shared_ptr<Procedure>> procedure_list;
+    std::shared_ptr<TNode> rootNode{};
+    std::vector<std::shared_ptr<TNode>> tnode_list{};
+
+    PKB() = default;
+
+    std::shared_ptr<TNode> build_AST() {
+        if (!Parser::instance().initialized) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Parser is not initialized.");
+            return nullptr;
+        }
+
+        this->rootNode = std::make_shared<TNode>(Parser::instance().parse_procedure());
+        set_tnode_children(rootNode, get_tnode_children_as_node(rootNode));
+
+        assign_command_no(rootNode);
+
+        return rootNode;
+    }
 };
 
 namespace pkb {

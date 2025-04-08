@@ -11,6 +11,7 @@ int main() {
         fatal_error(__PRETTY_FUNCTION__, __LINE__, "Failed to initialize parser");
         return -1;
     }
+    PKB::instance().initialize();
 
     int input;
     std::cout << "1. Parser" << std::endl;
