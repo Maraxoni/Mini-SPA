@@ -509,130 +509,74 @@ namespace query {
             if (!synonym.empty()) {
                 if (synonym == param1) {
                     if (node1->get_command_no() == std::stoi(value)) {
-                        toFileQueryFile << node1->get_command_no();
-                        if (relation == "Follows") {
-                            toFileQueryFile << " follows before ";
-                        } else if (relation == "Follows*") {
-                            toFileQueryFile << " follows* before ";
-                        } else if (relation == "Parent") {
-                            toFileQueryFile << " parents ";
-                        } else if (relation == "Parent*") {
-                            toFileQueryFile << " parents* ";
-                        } else if (relation == "Modifies") {
-                            toFileQueryFile << " modifies ";
-                        } else if (relation == "Uses") {
-                            toFileQueryFile << " uses ";
-                        }
-                        toFileQueryFile << node2->
-                                get_command_no() <<
-                                "\n";
+                        toFileParam1(toFileQueryFile, node1, node2, relation);
                     }
                 } else if (synonym == param2) {
                     if (node2->get_command_no() == std::stoi(value)) {
-                        toFileQueryFile << node1->get_command_no();
-                        if (relation == "Follows") {
-                            toFileQueryFile << " follows before ";
-                        } else if (relation == "Follows*") {
-                            toFileQueryFile << " follows* before ";
-                        } else if (relation == "Parent") {
-                            toFileQueryFile << " parents ";
-                        } else if (relation == "Parent*") {
-                            toFileQueryFile << " parents* ";
-                        } else if (relation == "Modifies") {
-                            toFileQueryFile << " modifies ";
-                        } else if (relation == "Uses") {
-                            toFileQueryFile << " uses ";
-                        }
-                        toFileQueryFile << node2->
-                                get_command_no() <<
-                                "\n";
+                        toFileParam1(toFileQueryFile, node1, node2, relation);
                     }
                 }
             } else {
-                toFileQueryFile << node1->get_command_no();
-                if (relation == "Follows") {
-                    toFileQueryFile << " follows before ";
-                } else if (relation == "Follows*") {
-                    toFileQueryFile << " follows* before ";
-                } else if (relation == "Parent") {
-                    toFileQueryFile << " parents ";
-                } else if (relation == "Parent*") {
-                    toFileQueryFile << " parents* ";
-                } else if (relation == "Modifies") {
-                    toFileQueryFile << " modifies ";
-                } else if (relation == "Uses") {
-                    toFileQueryFile << " uses ";
-                }
-                toFileQueryFile << node2->
-                        get_command_no() <<
-                        "\n";
+                toFileParam1(toFileQueryFile, node1, node2, relation);
             }
         } else if (select == param2) {
             if (!synonym.empty()) {
                 if (synonym == param1) {
                     if (node1->get_command_no() == std::stoi(value)) {
-                        toFileQueryFile << node2->get_command_no();
-                        if (relation == "Follows") {
-                            toFileQueryFile << " follows ";
-                        } else if (relation == "Follows*") {
-                            toFileQueryFile << " follows* ";
-                        } else if (relation == "Parent") {
-                            toFileQueryFile << " is child of ";
-                        } else if (relation == "Parent*") {
-                            toFileQueryFile << " is child* of ";
-                        } else if (relation == "Modifies") {
-                            toFileQueryFile << " is modified by ";
-                        } else if (relation == "Uses") {
-                            toFileQueryFile << " is used by ";
-                        }
-                        toFileQueryFile << node1->
-                                get_command_no() <<
-                                "\n";
+                        toFileParam2(toFileQueryFile, node1, node2, relation);
                     }
                 } else if (synonym == param2) {
                     if (node2->get_command_no() == std::stoi(value)) {
-                        toFileQueryFile << node2->get_command_no();
-                        if (relation == "Follows") {
-                            toFileQueryFile << " follows ";
-                        } else if (relation == "Follows*") {
-                            toFileQueryFile << " follows* ";
-                        } else if (relation == "Parent") {
-                            toFileQueryFile << " is child of ";
-                        } else if (relation == "Parent*") {
-                            toFileQueryFile << " is child* of ";
-                        } else if (relation == "Modifies") {
-                            toFileQueryFile << " is modified by ";
-                        } else if (relation == "Uses") {
-                            toFileQueryFile << " is used by ";
-                        }
-                        toFileQueryFile << node1->
-                                get_command_no() <<
-                                "\n";
+                        toFileParam2(toFileQueryFile, node1, node2, relation);
                     }
                 }
             } else {
-                toFileQueryFile << node2->get_command_no();
-                if (relation == "Follows") {
-                    toFileQueryFile << " follows ";
-                } else if (relation == "Follows*") {
-                    toFileQueryFile << " follows* ";
-                } else if (relation == "Parent") {
-                    toFileQueryFile << " is child of ";
-                } else if (relation == "Parent*") {
-                    toFileQueryFile << " is child* of ";
-                } else if (relation == "Modifies") {
-                    toFileQueryFile << " is modified by ";
-                } else if (relation == "Uses") {
-                    toFileQueryFile << " is used by ";
-                }
-                toFileQueryFile << node1->
-                        get_command_no() <<
-                        "\n";
+                toFileParam2(toFileQueryFile, node1, node2, relation);
             }
         }
     }
 
     bool isNumber(const std::string &str) {
         return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
+    }
+    void toFileParam1(std::ofstream &toFileParam1, const std::shared_ptr<TNode> node1,
+                           const std::shared_ptr<TNode> node2, const std::string relation) {
+        toFileParam1 << node1->get_command_no();
+        if (relation == "Follows") {
+            toFileParam1 << " follows before ";
+        } else if (relation == "Follows*") {
+            toFileParam1 << " follows* before ";
+        } else if (relation == "Parent") {
+            toFileParam1 << " parents ";
+        } else if (relation == "Parent*") {
+            toFileParam1 << " parents* ";
+        } else if (relation == "Modifies") {
+            toFileParam1 << " modifies ";
+        } else if (relation == "Uses") {
+            toFileParam1 << " uses ";
+        }
+        toFileParam1 << node2->
+                get_command_no() <<
+                "\n";
+    }
+    void toFileParam2(std::ofstream &toFileParam2, const std::shared_ptr<TNode> node1,
+                           const std::shared_ptr<TNode> node2, const std::string relation) {
+        toFileParam2 << node2->get_command_no();
+        if (relation == "Follows") {
+            toFileParam2 << " follows ";
+        } else if (relation == "Follows*") {
+            toFileParam2 << " follows* ";
+        } else if (relation == "Parent") {
+            toFileParam2 << " is child of ";
+        } else if (relation == "Parent*") {
+            toFileParam2 << " is child* of ";
+        } else if (relation == "Modifies") {
+            toFileParam2 << " is modified by ";
+        } else if (relation == "Uses") {
+            toFileParam2 << " is used by ";
+        }
+        toFileParam2 << node1->
+                get_command_no() <<
+                "\n";
     }
 }

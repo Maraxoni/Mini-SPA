@@ -22,6 +22,10 @@ namespace query {
                            const std::string synonym, const std::string value);
 
     bool isNumber(const std::string &str);
+    void toFileParam1(std::ofstream &toFileParam1, const std::shared_ptr<TNode> node1,
+                           const std::shared_ptr<TNode> node2, const std::string relation);
+    void toFileParam2(std::ofstream &toFileParam2, const std::shared_ptr<TNode> node1,
+                           const std::shared_ptr<TNode> node2, const std::string relation);
 }
 
 #endif //QUERY_H
