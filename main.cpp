@@ -1,10 +1,17 @@
 #include <bits/stdc++.h>
 
 //#include "parser.h"
+
 #include "pkb.h"
 #include "query.h"
 
 int main() {
+    std::string path = "../files/input_min.txt";
+    if (!Parser::instance().initialize_by_file(path)) {
+        fatal_error(__PRETTY_FUNCTION__, __LINE__, "Failed to initialize parser");
+        return -1;
+    }
+
     int input;
     std::cout << "1. Parser" << std::endl;
     std::cout << "2. PKB" << std::endl;
