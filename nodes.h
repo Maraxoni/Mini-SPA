@@ -21,6 +21,10 @@ public:
     virtual ~Node() = default;
 
     [[nodiscard]] virtual std::string to_string() const = 0;
+    virtual void print(int indent = 0) const = 0;
+    void print_indent(int indent) const {
+        for (int i = 0; i < indent; ++i) std::cout << "  ";
+    }
 };
 
 // stmtLst : stmt+
@@ -45,6 +49,13 @@ public:
         result += "}\n===== END PROCEDURE " + name;
         return result;
     }
+    void print(int indent = 0) const override {
+        print_indent(indent);
+        std::cout << "Procedure: " << name << "\n";
+        for (const auto& stmt : stmt_list) {
+            stmt->print(indent + 1);
+        }
+    }
 };
 
 // while : ‘while’ var_name ‘{‘ stmtLst ‘}’
@@ -66,6 +77,17 @@ public:
         result += "}\n=== END WHILE " + var_name;
         return result;
     }
+
+    void print(int indent = 0) const override {
+        print_indent(indent);
+        std::cout << "While: " << var_name << "\n";
+        for (const auto& stmt : stmt_list) {
+            stmt->print(indent + 1);
+        }
+    }
+
+
+
 };
 
 // assign : var_name ‘=’ expr ‘;’
@@ -82,6 +104,15 @@ public:
     [[nodiscard]] std::string to_string() const override {
         return var_name + " = " + expr->to_string() + ";";
     }
+
+    void print(int indent = 0) const override {
+        print_indent(indent);
+        std::cout << "Assign: " << var_name << "\n";
+        expr->print(indent + 1);
+    }
+
+
+
 };
 
 // expr : expr ‘+’ factor | factor
@@ -100,6 +131,15 @@ public:
     [[nodiscard]] std::string to_string() const override {
         return left->to_string() + " " + op + " " + right->to_string();
     }
+
+    void print(int indent = 0) const override {
+        print_indent(indent);
+        std::cout << "Expr: " << op << "\n";
+        left->print(indent + 1);  // recur left
+        right->print(indent + 1);  // recur right
+    }
+
+
 };
 
 // NAME : LETTER (LETTER | DIGIT)*
@@ -120,6 +160,14 @@ public:
     [[nodiscard]] std::string to_string() const override {
         return value;
     }
+
+    void print(int indent = 0) const override {
+        print_indent(indent);
+        std::cout << "Factor: " << value << "\n";
+    }
+
+
 };
+
 
 #endif //MINISPA_NODES_H

@@ -192,6 +192,7 @@ private:
 public:
     std::unique_ptr<Lexer> lexer;
     bool initialized = false;
+    std::shared_ptr<Procedure> parsed_tree;
 
     Parser() = default;
 
@@ -239,7 +240,9 @@ public:
         }
 
         eat_and_read_next_token(TokenType::RBRACE);
-        return std::make_shared<Procedure>(name, stmt_list);
+        parsed_tree = std::make_shared<Procedure>(name, stmt_list);
+        parsed_tree->print();
+        return parsed_tree;
     }
 
     std::vector<std::shared_ptr<Node>> parse_stmt_list() {
