@@ -117,6 +117,10 @@ public:
         this->value = value;
     }
 
+    [[nodiscard]] std::string get_value() const {
+        return value;
+    }
+
     [[nodiscard]] std::string to_string() const override {
         return value;
     }

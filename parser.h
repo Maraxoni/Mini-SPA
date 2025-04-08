@@ -192,11 +192,22 @@ private:
         }
     }
 
+    //private constructor
+    Parser() = default;
+
 public:
     std::unique_ptr<Lexer> lexer;
     bool initialized = false;
 
-    Parser() = default;
+    //don't allow copying
+    Parser(Parser const &) = delete;
+
+    void operator=(Parser const &) = delete;
+
+    static Parser &instance() {
+        static Parser instance;
+        return instance;
+    }
 
 
     bool initialize_by_file(const std::string &filePath) {
