@@ -539,9 +539,11 @@ namespace query {
     bool isNumber(const std::string &str) {
         return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
     }
+
     void toFileParam1(std::ofstream &toFileParam1, const std::shared_ptr<TNode> node1,
-                           const std::shared_ptr<TNode> node2, const std::string relation) {
+                      const std::shared_ptr<TNode> node2, const std::string relation) {
         toFileParam1 << node1->get_command_no();
+
         if (relation == "Follows") {
             toFileParam1 << " follows before ";
         } else if (relation == "Follows*") {
@@ -555,13 +557,27 @@ namespace query {
         } else if (relation == "Uses") {
             toFileParam1 << " uses ";
         }
-        toFileParam1 << node2->
-                get_command_no() <<
-                "\n";
+
+        if (relation == "Modifies" || relation == "Uses") {
+            toFileParam1 << node2->
+                    get_node()->to_string() <<
+                    "\n";
+        } else {
+            toFileParam1 << node2->
+                    get_command_no() <<
+                    "\n";
+        }
     }
+
     void toFileParam2(std::ofstream &toFileParam2, const std::shared_ptr<TNode> node1,
-                           const std::shared_ptr<TNode> node2, const std::string relation) {
-        toFileParam2 << node2->get_command_no();
+                      const std::shared_ptr<TNode> node2, const std::string relation) {
+        if (relation == "Modifies" || relation == "Uses") {
+            toFileParam2 << node2->get_node()->to_string();
+        } else {
+            toFileParam2 << node2->
+                    get_command_no();
+        }
+
         if (relation == "Follows") {
             toFileParam2 << " follows ";
         } else if (relation == "Follows*") {
@@ -575,8 +591,8 @@ namespace query {
         } else if (relation == "Uses") {
             toFileParam2 << " is used by ";
         }
-        toFileParam2 << node1->
-                get_command_no() <<
-                "\n";
+
+        toFileParam2 << node1->get_command_no();
+        toFileParam2 << "\n";
     }
 }

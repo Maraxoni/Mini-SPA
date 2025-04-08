@@ -38,456 +38,456 @@ Query result for: Select s2 such that Parent (s1,s2)
 8 is child of 7
 9 is child of 8
 Query result for: Select s1 such that Uses (s1,s2)
-3 uses 3
-3 uses 3
-4 uses 4
-4 uses 4
-5 uses 5
-5 uses 5
-5 uses 5
-5 uses 5
-5 uses 5
-5 uses 5
-5 uses 5
-5 uses 5
-5 uses 5
-6 uses 6
-6 uses 6
-6 uses 6
-6 uses 6
-6 uses 6
-10 uses 10
-10 uses 10
-10 uses 10
-10 uses 10
-10 uses 10
-11 uses 11
-11 uses 11
-11 uses 11
-11 uses 11
-11 uses 11
-11 uses 11
-11 uses 11
-11 uses 11
-11 uses 11
-12 uses 12
-12 uses 12
-12 uses 12
-12 uses 12
-12 uses 12
-13 uses 13
-13 uses 13
-13 uses 13
-13 uses 13
-13 uses 13
-14 uses 14
-14 uses 14
-14 uses 14
-14 uses 14
-14 uses 14
-14 uses 14
-14 uses 14
-14 uses 14
-14 uses 14
-15 uses 15
-15 uses 15
-15 uses 15
-15 uses 15
-15 uses 15
-16 uses 16
-16 uses 16
-16 uses 16
-16 uses 16
-16 uses 16
-17 uses 17
-17 uses 17
-17 uses 17
-17 uses 17
-17 uses 17
-17 uses 17
-17 uses 17
-17 uses 17
-17 uses 17
-18 uses 18
-18 uses 18
-18 uses 18
-18 uses 18
-18 uses 18
-19 uses 19
-19 uses 19
-19 uses 19
-19 uses 19
-19 uses 19
-19 uses 19
-19 uses 19
-19 uses 19
-19 uses 19
-21 uses 21
-21 uses 21
-21 uses 21
-21 uses 21
-21 uses 21
-21 uses 21
-21 uses 21
-21 uses 21
-21 uses 21
-21 uses 21
-21 uses 21
-21 uses 21
-21 uses 21
-21 uses 21
-22 uses 22
-22 uses 22
-22 uses 22
-22 uses 22
-22 uses 22
-22 uses 22
-22 uses 22
-22 uses 22
-22 uses 22
-23 uses 23
-23 uses 23
-23 uses 23
-23 uses 23
-23 uses 23
-23 uses 23
-23 uses 23
-23 uses 23
-23 uses 23
-24 uses 24
-24 uses 24
-24 uses 24
-24 uses 24
-24 uses 24
-24 uses 24
-24 uses 24
-24 uses 24
-24 uses 24
-26 uses 26
-26 uses 26
-26 uses 26
-26 uses 26
-26 uses 26
-26 uses 26
-26 uses 26
-26 uses 26
-26 uses 26
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-27 uses 27
-29 uses 29
-29 uses 29
-29 uses 29
-29 uses 29
-29 uses 29
-29 uses 29
-29 uses 29
-29 uses 29
-29 uses 29
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-30 uses 30
-31 uses 31
-31 uses 31
-31 uses 31
-31 uses 31
-31 uses 31
-31 uses 31
-31 uses 31
-31 uses 31
-31 uses 31
-31 uses 31
-31 uses 31
-31 uses 31
-31 uses 31
-31 uses 31
-32 uses 32
-32 uses 32
-32 uses 32
-32 uses 32
-32 uses 32
-32 uses 32
-32 uses 32
-32 uses 32
-32 uses 32
-32 uses 32
-32 uses 32
-32 uses 32
-32 uses 32
-32 uses 32
+3 uses t
+3 uses 10
+4 uses a
+4 uses 2
+5 uses t
+5 uses a
+5 uses d
+5 uses 3
+5 uses t
+5 uses a
+5 uses d
+5 uses t
+5 uses a
+6 uses b
+6 uses 5
+6 uses 42
+6 uses b
+6 uses 5
+10 uses a
+10 uses d
+10 uses 7
+10 uses a
+10 uses d
+11 uses d
+11 uses t
+11 uses c
+11 uses 9
+11 uses d
+11 uses t
+11 uses c
+11 uses d
+11 uses t
+12 uses d
+12 uses 1
+12 uses 8
+12 uses d
+12 uses 1
+13 uses a
+13 uses d
+13 uses 7
+13 uses a
+13 uses d
+14 uses d
+14 uses t
+14 uses c
+14 uses 9
+14 uses d
+14 uses t
+14 uses c
+14 uses d
+14 uses t
+15 uses d
+15 uses 1
+15 uses 8
+15 uses d
+15 uses 1
+16 uses a
+16 uses d
+16 uses 7
+16 uses a
+16 uses d
+17 uses d
+17 uses t
+17 uses c
+17 uses 9
+17 uses d
+17 uses t
+17 uses c
+17 uses d
+17 uses t
+18 uses d
+18 uses 1
+18 uses 8
+18 uses d
+18 uses 1
+19 uses d
+19 uses t
+19 uses k
+19 uses 6
+19 uses d
+19 uses t
+19 uses k
+19 uses d
+19 uses t
+21 uses d
+21 uses 3
+21 uses a
+21 uses c
+21 uses 11
+21 uses d
+21 uses 3
+21 uses a
+21 uses c
+21 uses d
+21 uses 3
+21 uses a
+21 uses d
+21 uses 3
+22 uses c
+22 uses 20
+22 uses x
+22 uses 14
+22 uses c
+22 uses 20
+22 uses x
+22 uses c
+22 uses 20
+23 uses t
+23 uses c
+23 uses 7
+23 uses 13
+23 uses t
+23 uses c
+23 uses 7
+23 uses t
+23 uses c
+24 uses t
+24 uses a
+24 uses b
+24 uses 15
+24 uses t
+24 uses a
+24 uses b
+24 uses t
+24 uses a
+26 uses t
+26 uses 2
+26 uses x
+26 uses 17
+26 uses t
+26 uses 2
+26 uses x
+26 uses t
+26 uses 2
+27 uses t
+27 uses a
+27 uses d
+27 uses k
+27 uses b
+27 uses c
+27 uses 19
+27 uses t
+27 uses a
+27 uses d
+27 uses k
+27 uses b
+27 uses c
+27 uses t
+27 uses a
+27 uses d
+27 uses k
+27 uses b
+27 uses t
+27 uses a
+27 uses d
+27 uses k
+27 uses t
+27 uses a
+27 uses d
+27 uses t
+27 uses a
+29 uses t
+29 uses 2
+29 uses x
+29 uses 17
+29 uses t
+29 uses 2
+29 uses x
+29 uses t
+29 uses 2
+30 uses t
+30 uses a
+30 uses d
+30 uses k
+30 uses b
+30 uses c
+30 uses 19
+30 uses t
+30 uses a
+30 uses d
+30 uses k
+30 uses b
+30 uses c
+30 uses t
+30 uses a
+30 uses d
+30 uses k
+30 uses b
+30 uses t
+30 uses a
+30 uses d
+30 uses k
+30 uses t
+30 uses a
+30 uses d
+30 uses t
+30 uses a
+31 uses t
+31 uses k
+31 uses d
+31 uses x
+31 uses 21
+31 uses t
+31 uses k
+31 uses d
+31 uses x
+31 uses t
+31 uses k
+31 uses d
+31 uses t
+31 uses k
+32 uses a
+32 uses t
+32 uses c
+32 uses 4
+32 uses 23
+32 uses a
+32 uses t
+32 uses c
+32 uses 4
+32 uses a
+32 uses t
+32 uses c
+32 uses a
+32 uses t
 Query result for: Select s2 such that Uses (s1,s2)
-3 is used by 3
-3 is used by 3
-4 is used by 4
-4 is used by 4
-5 is used by 5
-5 is used by 5
-5 is used by 5
-5 is used by 5
-5 is used by 5
-5 is used by 5
-5 is used by 5
-5 is used by 5
-5 is used by 5
-6 is used by 6
-6 is used by 6
-6 is used by 6
-6 is used by 6
-6 is used by 6
-10 is used by 10
-10 is used by 10
-10 is used by 10
-10 is used by 10
-10 is used by 10
-11 is used by 11
-11 is used by 11
-11 is used by 11
-11 is used by 11
-11 is used by 11
-11 is used by 11
-11 is used by 11
-11 is used by 11
-11 is used by 11
-12 is used by 12
-12 is used by 12
-12 is used by 12
-12 is used by 12
-12 is used by 12
-13 is used by 13
-13 is used by 13
-13 is used by 13
-13 is used by 13
-13 is used by 13
-14 is used by 14
-14 is used by 14
-14 is used by 14
-14 is used by 14
-14 is used by 14
-14 is used by 14
-14 is used by 14
-14 is used by 14
-14 is used by 14
-15 is used by 15
-15 is used by 15
-15 is used by 15
-15 is used by 15
-15 is used by 15
-16 is used by 16
-16 is used by 16
-16 is used by 16
-16 is used by 16
-16 is used by 16
-17 is used by 17
-17 is used by 17
-17 is used by 17
-17 is used by 17
-17 is used by 17
-17 is used by 17
-17 is used by 17
-17 is used by 17
-17 is used by 17
-18 is used by 18
-18 is used by 18
-18 is used by 18
-18 is used by 18
-18 is used by 18
-19 is used by 19
-19 is used by 19
-19 is used by 19
-19 is used by 19
-19 is used by 19
-19 is used by 19
-19 is used by 19
-19 is used by 19
-19 is used by 19
-21 is used by 21
-21 is used by 21
-21 is used by 21
-21 is used by 21
-21 is used by 21
-21 is used by 21
-21 is used by 21
-21 is used by 21
-21 is used by 21
-21 is used by 21
-21 is used by 21
-21 is used by 21
-21 is used by 21
-21 is used by 21
-22 is used by 22
-22 is used by 22
-22 is used by 22
-22 is used by 22
-22 is used by 22
-22 is used by 22
-22 is used by 22
-22 is used by 22
-22 is used by 22
-23 is used by 23
-23 is used by 23
-23 is used by 23
-23 is used by 23
-23 is used by 23
-23 is used by 23
-23 is used by 23
-23 is used by 23
-23 is used by 23
-24 is used by 24
-24 is used by 24
-24 is used by 24
-24 is used by 24
-24 is used by 24
-24 is used by 24
-24 is used by 24
-24 is used by 24
-24 is used by 24
-26 is used by 26
-26 is used by 26
-26 is used by 26
-26 is used by 26
-26 is used by 26
-26 is used by 26
-26 is used by 26
-26 is used by 26
-26 is used by 26
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-27 is used by 27
-29 is used by 29
-29 is used by 29
-29 is used by 29
-29 is used by 29
-29 is used by 29
-29 is used by 29
-29 is used by 29
-29 is used by 29
-29 is used by 29
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-30 is used by 30
-31 is used by 31
-31 is used by 31
-31 is used by 31
-31 is used by 31
-31 is used by 31
-31 is used by 31
-31 is used by 31
-31 is used by 31
-31 is used by 31
-31 is used by 31
-31 is used by 31
-31 is used by 31
-31 is used by 31
-31 is used by 31
-32 is used by 32
-32 is used by 32
-32 is used by 32
-32 is used by 32
-32 is used by 32
-32 is used by 32
-32 is used by 32
-32 is used by 32
-32 is used by 32
-32 is used by 32
-32 is used by 32
-32 is used by 32
-32 is used by 32
-32 is used by 32
+t is used by 3
+10 is used by 3
+a is used by 4
+2 is used by 4
+t is used by 5
+t is used by 5
+t is used by 5
+a is used by 5
+a is used by 5
+a is used by 5
+d is used by 5
+d is used by 5
+3 is used by 5
+b is used by 6
+b is used by 6
+5 is used by 6
+5 is used by 6
+42 is used by 6
+a is used by 10
+a is used by 10
+d is used by 10
+d is used by 10
+7 is used by 10
+d is used by 11
+d is used by 11
+d is used by 11
+t is used by 11
+t is used by 11
+t is used by 11
+c is used by 11
+c is used by 11
+9 is used by 11
+d is used by 12
+d is used by 12
+1 is used by 12
+1 is used by 12
+8 is used by 12
+a is used by 13
+a is used by 13
+d is used by 13
+d is used by 13
+7 is used by 13
+d is used by 14
+d is used by 14
+d is used by 14
+t is used by 14
+t is used by 14
+t is used by 14
+c is used by 14
+c is used by 14
+9 is used by 14
+d is used by 15
+d is used by 15
+1 is used by 15
+1 is used by 15
+8 is used by 15
+a is used by 16
+a is used by 16
+d is used by 16
+d is used by 16
+7 is used by 16
+d is used by 17
+d is used by 17
+d is used by 17
+t is used by 17
+t is used by 17
+t is used by 17
+c is used by 17
+c is used by 17
+9 is used by 17
+d is used by 18
+d is used by 18
+1 is used by 18
+1 is used by 18
+8 is used by 18
+d is used by 19
+d is used by 19
+d is used by 19
+t is used by 19
+t is used by 19
+t is used by 19
+k is used by 19
+k is used by 19
+6 is used by 19
+d is used by 21
+d is used by 21
+d is used by 21
+d is used by 21
+3 is used by 21
+3 is used by 21
+3 is used by 21
+3 is used by 21
+a is used by 21
+a is used by 21
+a is used by 21
+c is used by 21
+c is used by 21
+11 is used by 21
+c is used by 22
+c is used by 22
+c is used by 22
+20 is used by 22
+20 is used by 22
+20 is used by 22
+x is used by 22
+x is used by 22
+14 is used by 22
+t is used by 23
+t is used by 23
+t is used by 23
+c is used by 23
+c is used by 23
+c is used by 23
+7 is used by 23
+7 is used by 23
+13 is used by 23
+t is used by 24
+t is used by 24
+t is used by 24
+a is used by 24
+a is used by 24
+a is used by 24
+b is used by 24
+b is used by 24
+15 is used by 24
+t is used by 26
+t is used by 26
+t is used by 26
+2 is used by 26
+2 is used by 26
+2 is used by 26
+x is used by 26
+x is used by 26
+17 is used by 26
+t is used by 27
+t is used by 27
+t is used by 27
+t is used by 27
+t is used by 27
+t is used by 27
+a is used by 27
+a is used by 27
+a is used by 27
+a is used by 27
+a is used by 27
+a is used by 27
+d is used by 27
+d is used by 27
+d is used by 27
+d is used by 27
+d is used by 27
+k is used by 27
+k is used by 27
+k is used by 27
+k is used by 27
+b is used by 27
+b is used by 27
+b is used by 27
+c is used by 27
+c is used by 27
+19 is used by 27
+t is used by 29
+t is used by 29
+t is used by 29
+2 is used by 29
+2 is used by 29
+2 is used by 29
+x is used by 29
+x is used by 29
+17 is used by 29
+t is used by 30
+t is used by 30
+t is used by 30
+t is used by 30
+t is used by 30
+t is used by 30
+a is used by 30
+a is used by 30
+a is used by 30
+a is used by 30
+a is used by 30
+a is used by 30
+d is used by 30
+d is used by 30
+d is used by 30
+d is used by 30
+d is used by 30
+k is used by 30
+k is used by 30
+k is used by 30
+k is used by 30
+b is used by 30
+b is used by 30
+b is used by 30
+c is used by 30
+c is used by 30
+19 is used by 30
+t is used by 31
+t is used by 31
+t is used by 31
+t is used by 31
+k is used by 31
+k is used by 31
+k is used by 31
+k is used by 31
+d is used by 31
+d is used by 31
+d is used by 31
+x is used by 31
+x is used by 31
+21 is used by 31
+a is used by 32
+a is used by 32
+a is used by 32
+a is used by 32
+t is used by 32
+t is used by 32
+t is used by 32
+t is used by 32
+c is used by 32
+c is used by 32
+c is used by 32
+4 is used by 32
+4 is used by 32
+23 is used by 32
 Query result for: Select s1 such that Modifies (s1,s2)
 Query result for: Select s2 such that Modifies (s1,s2)
