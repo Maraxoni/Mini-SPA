@@ -107,7 +107,7 @@ namespace query {
             return;
         }
         // Using pkb class object
-        PKB pkb = PKB(parser);
+        auto pkb = PKB(parser);
         std::shared_ptr<TNode> rootNode = pkb.build_AST();
         std::vector<std::shared_ptr<TNode> > allNodes = pkb.get_ast_as_list(rootNode);
         // Lists of nodes of certain types
@@ -149,7 +149,7 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: whileNodes) {
                     for (const auto &node2: whileNodes) {
-                        if (pkb.follows(node1, node2)) {
+                        if (PKB::follows(node1, node2)) {
                             if (isNumber(param1)) {
                                 if (node1->get_command_no()
                                     == std::stoi(param1)
@@ -214,7 +214,7 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: whileNodes) {
                     for (const auto &node2: whileNodes) {
-                        if (pkb.followsT(node1, node2)) {
+                        if (PKB::followsT(node1, node2)) {
                             if (isNumber(param1)) {
                                 if (node1->get_command_no()
                                     == std::stoi(param1)
@@ -279,7 +279,7 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: whileNodes) {
                     for (const auto &node2: whileNodes) {
-                        if (pkb.parent(node1, node2)) {
+                        if (PKB::parent(node1, node2)) {
                             if (isNumber(param1)) {
                                 if (node1->get_command_no()
                                     == std::stoi(param1)
@@ -309,7 +309,7 @@ namespace query {
                 // For select == param2: Finding node 1 that comes before node 2
                 for (const auto &node2: whileNodes) {
                     for (const auto &node1: whileNodes) {
-                        if (pkb.parent(node1, node2)) {
+                        if (PKB::parent(node1, node2)) {
                             toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
                                               synonym,
                                               value);
@@ -325,7 +325,7 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: whileNodes) {
                     for (const auto &node2: whileNodes) {
-                        if (pkb.parentT(node1, node2)) {
+                        if (PKB::parentT(node1, node2)) {
                             if (isNumber(param1)) {
                                 if (node1->get_command_no()
                                     == std::stoi(param1)
@@ -355,7 +355,7 @@ namespace query {
                 // For select == param2: Finding node 1 that comes before node 2
                 for (const auto &node2: whileNodes) {
                     for (const auto &node1: whileNodes) {
-                        if (pkb.parentT(node1, node2)) {
+                        if (PKB::parentT(node1, node2)) {
                             if (isNumber(param1)) {
                                 if (node1->get_command_no()
                                     == std::stoi(param1)
@@ -390,7 +390,7 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: exprNodes) {
                     for (const auto &node2: factorNodes) {
-                        if (pkb.modifies(node1, node2)) {
+                        if (PKB::modifies(node1, node2)) {
                             if (isNumber(param1)) {
                                 if (node1->get_command_no()
                                     == std::stoi(param1)
@@ -420,7 +420,7 @@ namespace query {
                 // For select == param2: Finding node 1 that comes before node 2
                 for (const auto &node2: factorNodes) {
                     for (const auto &node1: exprNodes) {
-                        if (pkb.modifies(node1, node2)) {
+                        if (PKB::modifies(node1, node2)) {
                             toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
                                               synonym,
                                               value);
@@ -436,7 +436,7 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: exprNodes) {
                     for (const auto &node2: factorNodes) {
-                        if (pkb.uses(node1, node2)) {
+                        if (PKB::uses(node1, node2)) {
                             if (isNumber(param1)) {
                                 if (node1->get_command_no()
                                     == std::stoi(param1)
@@ -466,7 +466,7 @@ namespace query {
                 // For select == param2: Finding node 1 that comes before node 2
                 for (const auto &node2: factorNodes) {
                     for (const auto &node1: exprNodes) {
-                        if (pkb.uses(node1, node2)) {
+                        if (PKB::uses(node1, node2)) {
                             if (isNumber(param1)) {
                                 if (node1->get_command_no()
                                     == std::stoi(param1)
@@ -500,11 +500,11 @@ namespace query {
         }
     }
 
-    void toFileQueryResult(std::ofstream &toFileQueryFile, const std::shared_ptr<TNode> node1,
-                           const std::shared_ptr<TNode> node2, const std::string select, const std::string relation,
-                           const std::string param1,
-                           const std::string param2,
-                           const std::string synonym, const std::string value) {
+    void toFileQueryResult(std::ofstream &toFileQueryFile, const std::shared_ptr<TNode> &node1,
+                           const std::shared_ptr<TNode> &node2, const std::string &select, const std::string &relation,
+                           const std::string &param1,
+                           const std::string &param2,
+                           const std::string &synonym, const std::string &value) {
         if (select == param1) {
             if (!synonym.empty()) {
                 if (synonym == param1) {
@@ -540,8 +540,8 @@ namespace query {
         return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
     }
 
-    void toFileParam1(std::ofstream &toFileParam1, const std::shared_ptr<TNode> node1,
-                      const std::shared_ptr<TNode> node2, const std::string relation) {
+    void toFileParam1(std::ofstream &toFileParam1, const std::shared_ptr<TNode> &node1,
+                      const std::shared_ptr<TNode> &node2, const std::string &relation) {
         toFileParam1 << node1->get_command_no();
 
         if (relation == "Follows") {
@@ -569,8 +569,8 @@ namespace query {
         }
     }
 
-    void toFileParam2(std::ofstream &toFileParam2, const std::shared_ptr<TNode> node1,
-                      const std::shared_ptr<TNode> node2, const std::string relation) {
+    void toFileParam2(std::ofstream &toFileParam2, const std::shared_ptr<TNode> &node1,
+                      const std::shared_ptr<TNode> &node2, const std::string &relation) {
         if (relation == "Modifies" || relation == "Uses") {
             toFileParam2 << node2->get_node()->to_string();
         } else {
