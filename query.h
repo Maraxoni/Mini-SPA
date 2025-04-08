@@ -15,16 +15,22 @@ namespace query {
                          const std::string &synonym = "", const std::string &attribute = "",
                          const std::string &value = "");
 
-    void toFileQueryResult(std::ofstream &toFileQueryFile, const std::shared_ptr<TNode> &node1,
+    void query_check_static_numbers(std::ofstream &toFileQueryFile, const std::shared_ptr<TNode> &node1,
                            const std::shared_ptr<TNode> &node2, const std::string &select, const std::string &relation,
                            const std::string &param1,
                            const std::string &param2,
                            const std::string &synonym, const std::string &value);
 
-    bool isNumber(const std::string &str);
-    void toFileParam1(std::ofstream &toFileParam1, const std::shared_ptr<TNode> &node1,
-                           const std::shared_ptr<TNode> &node2, const std::string &relation);
-    void toFileParam2(std::ofstream &toFileParam2, const std::shared_ptr<TNode> &node1,
+    void query_check_with(std::ofstream &toFileQueryFile, const std::shared_ptr<TNode> &node1,
+                           const std::shared_ptr<TNode> &node2, const std::string &select, const std::string &relation,
+                           const std::string &param1,
+                           const std::string &param2,
+                           const std::string &synonym, const std::string &value);
+
+    bool query_is_number(const std::string &str);
+    void to_file_param1(std::ofstream &toFileParam1, const std::shared_ptr<TNode> &node1,
+                        const std::shared_ptr<TNode> &node2, const std::string &relation);
+    void to_file_param2(std::ofstream &toFileParam2, const std::shared_ptr<TNode> &node1,
                            const std::shared_ptr<TNode> &node2, const std::string &relation);
 }
 

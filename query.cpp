@@ -100,16 +100,11 @@ namespace query {
             std::cout << "  Attribute: " << attribute << "\n";
             std::cout << "  Value: " << value << "\n";
         }
-        // Loading code file
-        std::string path = "../files/input_min2.txt";
-        auto parser = std::make_shared<Parser>();
-        if (!parser->initialize_by_file(path)) {
-            return;
-        }
+
         // Using pkb class object
-        auto pkb = PKB(parser);
-        std::shared_ptr<TNode> rootNode = pkb.build_AST();
-        std::vector<std::shared_ptr<TNode> > allNodes = pkb.get_ast_as_list(rootNode);
+        std::shared_ptr<TNode> rootNode = PKB::build_AST();
+        std::vector<std::shared_ptr<TNode> > allNodes = PKB::get_ast_as_list(rootNode);
+
         // Lists of nodes of certain types
         std::vector<std::shared_ptr<TNode> > procedureNodes;
         std::vector<std::shared_ptr<TNode> > whileNodes;
@@ -149,60 +144,19 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: whileNodes) {
                     for (const auto &node2: whileNodes) {
-                        if (PKB::follows(node1, node2)) {
-                            if (isNumber(param1)) {
-                                if (node1->get_command_no()
-                                    == std::stoi(param1)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else if (isNumber(param2)) {
-                                if (node2->get_command_no() == std::stoi(param2)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else {
-                                toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                                  synonym,
-                                                  value);
-                            }
-                        }
+                        if (!PKB::follows(node1, node2)) continue;
+
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else if (select == param2) {
                 // For select == param2: Finding node 1 that comes before node 2
                 for (const auto &node2: whileNodes) {
                     for (const auto &node1: whileNodes) {
-                        if (pkb.follows(node1, node2)) {
-                            if (isNumber(param1)) {
-                                if (node1->get_command_no()
-                                    == std::stoi(param1)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else if (isNumber(param2)) {
-                                if (node2->get_command_no() == std::stoi(param2)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else {
-                                toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                                  synonym,
-                                                  value);
-                            }
-                        }
+                        if (!PKB::follows(node1, node2)) continue;
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else {
@@ -214,60 +168,18 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: whileNodes) {
                     for (const auto &node2: whileNodes) {
-                        if (PKB::followsT(node1, node2)) {
-                            if (isNumber(param1)) {
-                                if (node1->get_command_no()
-                                    == std::stoi(param1)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else if (isNumber(param2)) {
-                                if (node2->get_command_no() == std::stoi(param2)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else {
-                                toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                                  synonym,
-                                                  value);
-                            }
-                        }
+                        if (!PKB::followsT(node1, node2)) continue;
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else if (select == param2) {
                 // For select == param2: Finding node 1 that comes before node 2
                 for (const auto &node2: whileNodes) {
                     for (const auto &node1: whileNodes) {
-                        if (pkb.followsT(node1, node2)) {
-                            if (isNumber(param1)) {
-                                if (node1->get_command_no()
-                                    == std::stoi(param1)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else if (isNumber(param2)) {
-                                if (node2->get_command_no() == std::stoi(param2)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else {
-                                toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                                  synonym,
-                                                  value);
-                            }
-                        }
+                        if (!PKB::followsT(node1, node2)) continue;
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else {
@@ -279,41 +191,18 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: whileNodes) {
                     for (const auto &node2: whileNodes) {
-                        if (PKB::parent(node1, node2)) {
-                            if (isNumber(param1)) {
-                                if (node1->get_command_no()
-                                    == std::stoi(param1)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else if (isNumber(param2)) {
-                                if (node2->get_command_no() == std::stoi(param2)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else {
-                                toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                                  synonym,
-                                                  value);
-                            }
-                        }
+                        if (!PKB::parent(node1, node2)) continue;
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else if (select == param2) {
                 // For select == param2: Finding node 1 that comes before node 2
                 for (const auto &node2: whileNodes) {
                     for (const auto &node1: whileNodes) {
-                        if (PKB::parent(node1, node2)) {
-                            toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                              synonym,
-                                              value);
-                        }
+                        if (!PKB::parent(node1, node2)) continue;
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else {
@@ -325,60 +214,18 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: whileNodes) {
                     for (const auto &node2: whileNodes) {
-                        if (PKB::parentT(node1, node2)) {
-                            if (isNumber(param1)) {
-                                if (node1->get_command_no()
-                                    == std::stoi(param1)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else if (isNumber(param2)) {
-                                if (node2->get_command_no() == std::stoi(param2)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else {
-                                toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                                  synonym,
-                                                  value);
-                            }
-                        }
+                        if (!PKB::parentT(node1, node2)) continue;
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else if (select == param2) {
                 // For select == param2: Finding node 1 that comes before node 2
                 for (const auto &node2: whileNodes) {
                     for (const auto &node1: whileNodes) {
-                        if (PKB::parentT(node1, node2)) {
-                            if (isNumber(param1)) {
-                                if (node1->get_command_no()
-                                    == std::stoi(param1)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else if (isNumber(param2)) {
-                                if (node2->get_command_no() == std::stoi(param2)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else {
-                                toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                                  synonym,
-                                                  value);
-                            }
-                        }
+                        if (!PKB::parentT(node1, node2)) continue;
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else {
@@ -390,41 +237,18 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: exprNodes) {
                     for (const auto &node2: factorNodes) {
-                        if (PKB::modifies(node1, node2)) {
-                            if (isNumber(param1)) {
-                                if (node1->get_command_no()
-                                    == std::stoi(param1)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else if (isNumber(param2)) {
-                                if (node2->get_command_no() == std::stoi(param2)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else {
-                                toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                                  synonym,
-                                                  value);
-                            }
-                        }
+                        if (!PKB::modifies(node1, node2)) continue;
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else if (select == param2) {
                 // For select == param2: Finding node 1 that comes before node 2
                 for (const auto &node2: factorNodes) {
                     for (const auto &node1: exprNodes) {
-                        if (PKB::modifies(node1, node2)) {
-                            toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                              synonym,
-                                              value);
-                        }
+                        if (!PKB::modifies(node1, node2)) continue;
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else {
@@ -436,60 +260,18 @@ namespace query {
                 // For select == param1: Finding node 2 that comes after node 1
                 for (const auto &node1: exprNodes) {
                     for (const auto &node2: factorNodes) {
-                        if (PKB::uses(node1, node2)) {
-                            if (isNumber(param1)) {
-                                if (node1->get_command_no()
-                                    == std::stoi(param1)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else if (isNumber(param2)) {
-                                if (node2->get_command_no() == std::stoi(param2)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else {
-                                toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                                  synonym,
-                                                  value);
-                            }
-                        }
+                        if (!PKB::uses(node1, node2)) continue;
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else if (select == param2) {
                 // For select == param2: Finding node 1 that comes before node 2
                 for (const auto &node2: factorNodes) {
                     for (const auto &node1: exprNodes) {
-                        if (PKB::uses(node1, node2)) {
-                            if (isNumber(param1)) {
-                                if (node1->get_command_no()
-                                    == std::stoi(param1)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else if (isNumber(param2)) {
-                                if (node2->get_command_no() == std::stoi(param2)
-                                ) {
-                                    toFileQueryResult(processRelationFile, node1, node2, select, relation, param1,
-                                                      param2,
-                                                      synonym,
-                                                      value);
-                                }
-                            } else {
-                                toFileQueryResult(processRelationFile, node1, node2, select, relation, param1, param2,
-                                                  synonym,
-                                                  value);
-                            }
-                        }
+                        if (!PKB::uses(node1, node2)) continue;
+                        query_check_static_numbers(processRelationFile, node1, node2, select, relation, param1, param2,
+                                                   synonym, value);
                     }
                 }
             } else {
@@ -500,99 +282,130 @@ namespace query {
         }
     }
 
-    void toFileQueryResult(std::ofstream &toFileQueryFile, const std::shared_ptr<TNode> &node1,
-                           const std::shared_ptr<TNode> &node2, const std::string &select, const std::string &relation,
-                           const std::string &param1,
-                           const std::string &param2,
-                           const std::string &synonym, const std::string &value) {
+    void query_check_static_numbers(std::ofstream &queryFile, const std::shared_ptr<TNode> &node1,
+                                    const std::shared_ptr<TNode> &node2, const std::string &select,
+                                    const std::string &relation,
+                                    const std::string &param1,
+                                    const std::string &param2,
+                                    const std::string &synonym, const std::string &value) {
+        if (query_is_number(param1)) {
+            if (node1->get_command_no()
+                == std::stoi(param1)
+            ) {
+                query_check_with(queryFile, node1, node2, select, relation, param1,
+                                 param2,
+                                 synonym,
+                                 value);
+            }
+        } else if (query_is_number(param2)) {
+            if (node2->get_command_no() == std::stoi(param2)
+            ) {
+                query_check_with(queryFile, node1, node2, select, relation, param1,
+                                 param2,
+                                 synonym,
+                                 value);
+            }
+        } else {
+            query_check_with(queryFile, node1, node2, select, relation, param1, param2,
+                             synonym,
+                             value);
+        }
+    }
+
+
+    void query_check_with(std::ofstream &queryFile, const std::shared_ptr<TNode> &node1,
+                          const std::shared_ptr<TNode> &node2, const std::string &select, const std::string &relation,
+                          const std::string &param1,
+                          const std::string &param2,
+                          const std::string &synonym, const std::string &value) {
         if (select == param1) {
             if (!synonym.empty()) {
                 if (synonym == param1) {
                     if (node1->get_command_no() == std::stoi(value)) {
-                        toFileParam1(toFileQueryFile, node1, node2, relation);
+                        to_file_param1(queryFile, node1, node2, relation);
                     }
                 } else if (synonym == param2) {
                     if (node2->get_command_no() == std::stoi(value)) {
-                        toFileParam1(toFileQueryFile, node1, node2, relation);
+                        to_file_param1(queryFile, node1, node2, relation);
                     }
                 }
             } else {
-                toFileParam1(toFileQueryFile, node1, node2, relation);
+                to_file_param1(queryFile, node1, node2, relation);
             }
         } else if (select == param2) {
             if (!synonym.empty()) {
                 if (synonym == param1) {
                     if (node1->get_command_no() == std::stoi(value)) {
-                        toFileParam2(toFileQueryFile, node1, node2, relation);
+                        to_file_param2(queryFile, node1, node2, relation);
                     }
                 } else if (synonym == param2) {
                     if (node2->get_command_no() == std::stoi(value)) {
-                        toFileParam2(toFileQueryFile, node1, node2, relation);
+                        to_file_param2(queryFile, node1, node2, relation);
                     }
                 }
             } else {
-                toFileParam2(toFileQueryFile, node1, node2, relation);
+                to_file_param2(queryFile, node1, node2, relation);
             }
         }
     }
 
-    bool isNumber(const std::string &str) {
+    bool query_is_number(const std::string &str) {
         return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
     }
 
-    void toFileParam1(std::ofstream &toFileParam1, const std::shared_ptr<TNode> &node1,
-                      const std::shared_ptr<TNode> &node2, const std::string &relation) {
-        toFileParam1 << node1->get_command_no();
+    void to_file_param1(std::ofstream &to_file_param1, const std::shared_ptr<TNode> &node1,
+                        const std::shared_ptr<TNode> &node2, const std::string &relation) {
+        to_file_param1 << node1->get_command_no();
 
         if (relation == "Follows") {
-            toFileParam1 << " follows before ";
+            to_file_param1 << " follows before ";
         } else if (relation == "Follows*") {
-            toFileParam1 << " follows* before ";
+            to_file_param1 << " follows* before ";
         } else if (relation == "Parent") {
-            toFileParam1 << " parents ";
+            to_file_param1 << " parents ";
         } else if (relation == "Parent*") {
-            toFileParam1 << " parents* ";
+            to_file_param1 << " parents* ";
         } else if (relation == "Modifies") {
-            toFileParam1 << " modifies ";
+            to_file_param1 << " modifies ";
         } else if (relation == "Uses") {
-            toFileParam1 << " uses ";
+            to_file_param1 << " uses ";
         }
 
         if (relation == "Modifies" || relation == "Uses") {
-            toFileParam1 << node2->
+            to_file_param1 << node2->
                     get_node()->to_string() <<
                     "\n";
         } else {
-            toFileParam1 << node2->
+            to_file_param1 << node2->
                     get_command_no() <<
                     "\n";
         }
     }
 
-    void toFileParam2(std::ofstream &toFileParam2, const std::shared_ptr<TNode> &node1,
-                      const std::shared_ptr<TNode> &node2, const std::string &relation) {
+    void to_file_param2(std::ofstream &to_file_param2, const std::shared_ptr<TNode> &node1,
+                        const std::shared_ptr<TNode> &node2, const std::string &relation) {
         if (relation == "Modifies" || relation == "Uses") {
-            toFileParam2 << node2->get_node()->to_string();
+            to_file_param2 << node2->get_node()->to_string();
         } else {
-            toFileParam2 << node2->
+            to_file_param2 << node2->
                     get_command_no();
         }
 
         if (relation == "Follows") {
-            toFileParam2 << " follows ";
+            to_file_param2 << " follows ";
         } else if (relation == "Follows*") {
-            toFileParam2 << " follows* ";
+            to_file_param2 << " follows* ";
         } else if (relation == "Parent") {
-            toFileParam2 << " is child of ";
+            to_file_param2 << " is child of ";
         } else if (relation == "Parent*") {
-            toFileParam2 << " is child* of ";
+            to_file_param2 << " is child* of ";
         } else if (relation == "Modifies") {
-            toFileParam2 << " is modified by ";
+            to_file_param2 << " is modified by ";
         } else if (relation == "Uses") {
-            toFileParam2 << " is used by ";
+            to_file_param2 << " is used by ";
         }
 
-        toFileParam2 << node1->get_command_no();
-        toFileParam2 << "\n";
+        to_file_param2 << node1->get_command_no();
+        to_file_param2 << "\n";
     }
 }
