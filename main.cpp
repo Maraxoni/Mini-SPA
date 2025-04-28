@@ -3,7 +3,7 @@
 //#include "parser.h"
 
 #include "pkb.h"
-#include "query.h"
+#include "Query/query.h"
 
 int main() {
     std::string path = "../files/input_min.txt";

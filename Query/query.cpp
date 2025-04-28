@@ -8,13 +8,13 @@
 #include <bits/fs_fwd.h>
 #include <bits/fs_path.h>
 
-#include "parser.h"
-#include "pkb.h"
+#include "Instruction.h"
+#include "../pkb.h"
 
 namespace query {
     void processQueries() {
         // Relative file path
-        std::filesystem::path basePath = std::filesystem::path(__FILE__).parent_path();
+        std::filesystem::path basePath = std::filesystem::path(__FILE__).parent_path().parent_path();
         std::string inputFilePath = (basePath / "files" / "query_input.txt").string();
         std::string outputFilePath = (basePath / "files" / "query_output.txt").string();
         // Check paths
@@ -35,44 +35,64 @@ namespace query {
             return;
         }
 
-        // Loaded line
-        std::string line;
-        // Searching pattern
+        // Kolekcja instrukcji
+        std::vector<Instruction> instructions;
+
+        // Wzorzec dopasowania jednej pary relation(param1, param2) with optional with
         std::regex pattern(
-            R"(Select\s+(\w+)\s+such\s+that\s+(Follows\*?|Parent\*?|Modifies|Uses)\s*\(\s*((?:"[^"]+"|\w+|\d+))\s*,\s*((?:"[^"]+"|\w+|\d+))\s*\)(?:\s+with\s+(\w+)\.([\w#]+)\s*=\s*(?:"([^"]+)\"|(\d+)|(\w+)))?)"
+            R"(Select\s+(\w+)\s+such\s+that\s+(.*))" // Łapiemy SELECT i całą resztę (relations)
         );
 
         std::smatch match;
 
+        // Przetwarzanie linii
+        std::string line;
         while (std::getline(inputFile, line)) {
             if (std::regex_match(line, match, pattern)) {
-                std::cout << "Matched line: " << line << "\n";
+                std::string selectSynonym = match[1].str();
+                std::string instructionsPart = match[2].str();
 
-                // Match values
-                std::string select = match[1];
-                std::string relation = match[2];
-                std::string param1 = match[3];
-                std::string param2 = match[4];
+                Instruction instr(selectSynonym);
 
-                // Variables for "with" if exists
-                std::string synonym = match[5].matched ? match[5].str() : "";
-                std::string attribute = match[6].matched ? match[6].str() : "";
-                std::string value = "";
+                // Rozbij tekst na poszczególne relacje (oddzielone słowem 'and')
+                std::regex relationPattern(
+                    R"((Follows\*?|Parent\*?|Modifies|Uses)\s*\(\s*([^,]+)\s*,\s*([^)]+)\)\s*(with\s+(\w+)\.([\w#]+)\s*=\s*(?:"([^"]+)|(\d+)|(\w+)))?)"
+                );
+                auto begin = std::sregex_iterator(instructionsPart.begin(), instructionsPart.end(), relationPattern);
+                auto end = std::sregex_iterator();
 
-                // Match values if exists
-                if (match[7].matched) {
-                    value = match[7]; // text
-                } else if (match[8].matched) {
-                    value = match[8]; // int
-                } else if (match[9].matched) {
-                    value = match[9]; // id
+                for (auto it = begin; it != end; ++it) {
+                    std::smatch subMatch = *it;
+
+                    SubInstruction sub;
+
+                    sub.relation = subMatch[1];
+                    sub.param1 = subMatch[2];
+                    sub.param2 = subMatch[3];
+
+                    if (subMatch[5].matched) {
+                        // Jeśli jest część "with"
+                        sub.synonym = subMatch[5];
+                        sub.attribute = subMatch[6];
+                        if (subMatch[7].matched) sub.value = subMatch[7]; // "text"
+                        else if (subMatch[8].matched) sub.value = subMatch[8]; // liczba
+                        else if (subMatch[9].matched) sub.value = subMatch[9]; // zmienna
+                    }
+
+                    instr.addSubInstruction(sub);
                 }
 
-                // Processing relation
-                processRelation(outputFile, select, relation, param1, param2, synonym, attribute, value);
+                // Dodaj gotową instrukcję
+                instructions.push_back(instr);
             } else {
                 std::cout << "No match: " << line << "\n";
             }
+        }
+
+        for (auto &instr: instructions) {
+            instr.printInstruction();
+            //instr.searchDatabase();
+            //instr.printResults();
         }
 
         // Closing files
