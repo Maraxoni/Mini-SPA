@@ -5,7 +5,10 @@
 #ifndef SUBINSTRUCTION_H
 #define SUBINSTRUCTION_H
 #include <string>
+#include <unordered_map>
+#include <vector>
 
+#include "../pkb.h"
 
 class SubInstruction {
 public:
@@ -15,6 +18,7 @@ public:
     std::string synonym;
     std::string attribute;
     std::string value;
+    std::unordered_map<std::shared_ptr<TNode>, std::vector<std::shared_ptr<TNode>>> resultsMap;
 
     SubInstruction() = default;
 
