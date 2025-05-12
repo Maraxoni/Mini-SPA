@@ -1,3 +1,6 @@
+#ifndef PARSER_H
+#define PARSER_H
+
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -189,12 +192,23 @@ private:
         }
     }
 
+    //private constructor
+    Parser() = default;
+
 public:
     std::unique_ptr<Lexer> lexer;
     bool initialized = false;
     std::shared_ptr<Procedure> parsed_tree;
 
-    Parser() = default;
+    //don't allow copying
+    Parser(Parser const &) = delete;
+
+    void operator=(Parser const &) = delete;
+
+    static Parser &instance() {
+        static Parser instance;
+        return instance;
+    }
 
 
     bool initialize_by_file(const std::string &filePath) {
@@ -345,4 +359,4 @@ namespace parser {
     void test1();
 }
 
-
+#endif

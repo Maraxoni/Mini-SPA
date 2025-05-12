@@ -1,0 +1,248 @@
+Select s1 such that Follows (s1, s2)
+Result for sub(1): 
+28 follows 25, 
+
+Select a such that Follows* (20, a)
+Result for sub(1): 
+20 is followed* by 25, 28, 
+
+Select a such that Follows* (a, 20)
+Result for sub(1): 
+20 follows* 7, 
+
+Select a such that Modifies (a, "x")
+Result for sub(1): 
+
+Select s1 such that Follows (s1, s2) with s1.stmt#= 25 and Follows (s1, s2) with s1.stmt#= 28 and Follows (s1, s2)
+Result for sub(1): 
+28 follows 25, 
+
+Result for sub(2): 
+
+Result for sub(3): 
+28 follows 25, 
+
+Select s1 such that Follows (s1, s2) with s2.stmt#= 28 and Follows (s1, s2) and Follows (s1, s2) with s1.stmt#= 28
+Result for sub(1): 
+28 follows 25, 
+
+Result for sub(2): 
+28 follows 25, 
+
+Result for sub(3): 
+
+Select s1 such that Follows (s1, s2) with s2.stmt#= 25
+Result for sub(1): 
+
+Select a such that Follows* (20, a) with a.stmt#= 7
+Result for sub(1): 
+
+Select a such that Follows* (20, a) with a.stmt#= 28
+Result for sub(1): 
+20 is followed* by 28, 
+
+Select a such that Modifies (a, v) with v.varName= x
+Result for sub(1): 
+
+Select s1 such that Follows (s1, s2)
+Result for sub(1): 
+28 follows 25, 
+
+Select s1 such that Follows* (s1, s2)
+Result for sub(1): 
+28 follows* 7, 20, 25, 
+25 follows* 7, 20, 
+20 follows* 7, 
+
+Select s2 such that Follows* (s1, s2)
+Result for sub(1): 
+25 is followed* by 28, 
+20 is followed* by 25, 28, 
+7 is followed* by 20, 25, 28, 
+
+Select s1 such that Parent (s1, s2)
+Result for sub(1): 
+9 is child of 8, 
+8 is child of 7, 
+
+Select s2 such that Parent (s1, s2)
+Result for sub(1): 
+8 parents 9, 
+7 parents 8, 
+
+Select s1 such that Uses (s1, s2)
+Result for sub(1): 
+c is used by 32, 32, 32, 
+a is used by 32, 32, 32, 32, 
+21 is used by 31, 
+x is used by 31, 31, 
+d is used by 31, 31, 31, 
+19 is used by 30, 
+b is used by 30, 30, 30, 
+a is used by 30, 30, 30, 30, 30, 30, 
+t is used by 30, 30, 30, 30, 30, 30, 
+17 is used by 29, 
+2 is used by 29, 29, 29, 
+19 is used by 27, 
+c is used by 27, 27, 
+b is used by 27, 27, 27, 
+k is used by 27, 27, 27, 27, 
+4 is used by 32, 32, 
+d is used by 27, 27, 27, 27, 27, 
+a is used by 27, 27, 27, 27, 27, 27, 
+t is used by 27, 27, 27, 27, 27, 27, 
+17 is used by 26, 
+x is used by 26, 26, 
+2 is used by 26, 26, 26, 
+b is used by 24, 24, 
+a is used by 24, 24, 24, 
+t is used by 14, 14, 14, 
+d is used by 14, 14, 14, 
+9 is used by 17, 
+d is used by 30, 30, 30, 30, 30, 
+a is used by 4, 
+a is used by 13, 13, 
+1 is used by 12, 12, 
+10 is used by 3, 
+t is used by 17, 17, 17, 
+9 is used by 11, 
+k is used by 30, 30, 30, 30, 
+c is used by 11, 11, 
+t is used by 11, 11, 11, 
+d is used by 11, 11, 11, 
+7 is used by 10, 
+c is used by 30, 30, 
+a is used by 16, 16, 
+9 is used by 14, 
+1 is used by 18, 18, 
+t is used by 3, 
+d is used by 10, 10, 
+b is used by 6, 6, 
+d is used by 19, 19, 19, 
+2 is used by 4, 
+1 is used by 15, 15, 
+3 is used by 21, 21, 21, 21, 
+8 is used by 12, 
+a is used by 5, 5, 5, 
+c is used by 22, 22, 22, 
+c is used by 14, 14, 
+15 is used by 24, 
+13 is used by 23, 
+d is used by 5, 5, 
+20 is used by 22, 22, 22, 
+5 is used by 6, 6, 
+d is used by 15, 15, 
+23 is used by 32, 
+3 is used by 5, 
+7 is used by 13, 
+42 is used by 6, 
+d is used by 13, 13, 
+t is used by 5, 5, 5, 
+a is used by 10, 10, 
+8 is used by 15, 
+t is used by 32, 32, 32, 32, 
+d is used by 16, 16, 
+7 is used by 16, 
+d is used by 17, 17, 17, 
+c is used by 17, 17, 
+d is used by 18, 18, 
+8 is used by 18, 
+t is used by 19, 19, 19, 
+c is used by 23, 23, 23, 
+k is used by 19, 19, 
+t is used by 26, 26, 26, 
+6 is used by 19, 
+d is used by 21, 21, 21, 21, 
+t is used by 29, 29, 29, 
+a is used by 21, 21, 21, 
+c is used by 21, 21, 
+x is used by 29, 29, 
+11 is used by 21, 
+x is used by 22, 22, 
+14 is used by 22, 
+k is used by 31, 31, 31, 31, 
+d is used by 12, 12, 
+7 is used by 23, 23, 
+t is used by 31, 31, 31, 31, 
+t is used by 23, 23, 23, 
+t is used by 24, 24, 24, 
+
+Select s2 such that Uses (s1, s2)
+Result for sub(1): 
+32 uses a, t, 
+32 uses a, t, c, 4, 
+32 uses a, t, c, 4, 23, 
+31 uses t, k, 
+31 uses t, k, d, x, 
+31 uses t, k, d, x, 21, 
+30 uses t, a, 
+30 uses t, a, d, 
+30 uses t, a, d, k, 
+19 uses d, t, k, 6, 
+18 uses d, 1, 
+18 uses d, 1, 8, 
+17 uses d, t, c, 9, 
+16 uses a, d, 7, 
+16 uses a, d, 
+27 uses t, a, d, k, 
+14 uses d, t, 
+22 uses c, 20, x, 14, 
+12 uses d, 1, 
+5 uses t, a, d, 3, 
+13 uses a, d, 7, 
+21 uses d, 3, a, c, 11, 
+27 uses t, a, d, k, b, c, 
+3 uses t, 10, 
+11 uses d, t, c, 
+30 uses t, a, d, k, b, 
+26 uses t, 2, x, 
+17 uses d, t, c, 
+5 uses t, a, d, 
+29 uses t, 2, x, 17, 
+5 uses t, a, 
+15 uses d, 1, 8, 
+6 uses b, 5, 42, 
+30 uses t, a, d, k, b, c, 19, 
+6 uses b, 5, 
+32 uses a, t, c, 
+27 uses t, a, d, k, b, 
+13 uses a, d, 
+10 uses a, d, 7, 
+21 uses d, 3, a, c, 
+14 uses d, t, c, 
+10 uses a, d, 
+15 uses d, 1, 
+4 uses a, 2, 
+24 uses t, a, b, 
+11 uses d, t, c, 9, 
+11 uses d, t, 
+17 uses d, t, 
+14 uses d, t, c, 9, 
+12 uses d, 1, 8, 
+19 uses d, t, k, 
+27 uses t, a, d, k, b, c, 19, 
+19 uses d, t, 
+21 uses d, 3, a, 
+21 uses d, 3, 
+29 uses t, 2, x, 
+30 uses t, a, d, k, b, c, 
+22 uses c, 20, x, 
+22 uses c, 20, 
+23 uses t, c, 7, 13, 
+23 uses t, c, 
+24 uses t, a, b, 15, 
+24 uses t, a, 
+23 uses t, c, 7, 
+26 uses t, 2, x, 17, 
+26 uses t, 2, 
+27 uses t, a, d, 
+31 uses t, k, d, 
+27 uses t, a, 
+29 uses t, 2, 
+
+Select s1 such that Modifies (s1, s2)
+Result for sub(1): 
+
+Select s2 such that Modifies (s1, s2)
+Result for sub(1): 
+
