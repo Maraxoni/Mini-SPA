@@ -19,6 +19,8 @@ enum TokenType : int {
     RBRACE, // }
     EQUAL,  // =
     PLUS,   // +
+    MINUS,  // -
+    TIMES,  // *
     SEMICOLON, // ;
     END // end of file
 };
@@ -45,6 +47,10 @@ struct Token {
                 return "EQUAL";
             case TokenType::PLUS:
                 return "PLUS";
+            case TokenType::MINUS:
+                return "MINUS";
+            case TokenType::TIMES:
+                return "TIMES";
             case TokenType::SEMICOLON:
                 return "SEMICOLON";
             case TokenType::END:
@@ -139,6 +145,14 @@ public:
         if (currentChar == '+') {
             advance();
             return {TokenType::PLUS, "+"};
+        }
+        if (currentChar == '-') {
+            advance();
+            return {TokenType::MINUS, "-"};
+        }
+        if (currentChar == '*') {
+            advance();
+            return {TokenType::TIMES, "*"};
         }
         if (currentChar == ';') {
             advance();
@@ -301,22 +315,27 @@ public:
         eat_and_read_next_token(TokenType::SEMICOLON);
         return std::make_shared<Assign>(var_name, expr);
     }
-
     std::shared_ptr<Node> parse_expr() {
         if (!initialized) {
             return nullptr;
         }
 
         auto left = parse_factor();
-        while (currentToken.type == TokenType::PLUS) {
+        while (currentToken.type == TokenType::PLUS || currentToken.type == TokenType::MINUS || currentToken.type == TokenType::TIMES) {
             char op = currentToken.value[0];
-            //TODO: implement other operations like -, *, /
-            if (op != '+') {
+
+            // TODO: div?
+            if (op == '+') {
+                eat_and_read_next_token(TokenType::PLUS);
+            } else if (op == '-') {
+                eat_and_read_next_token(TokenType::MINUS);
+            } else if (op == '*') {
+                eat_and_read_next_token(TokenType::TIMES);
+            } else {
                 fatal_error(__PRETTY_FUNCTION__, __LINE__, "Invalid operation " + std::string(1, op));
                 return nullptr;
             }
 
-            eat_and_read_next_token(TokenType::PLUS);
             auto right = parse_factor();
             left = std::make_shared<Expr>(left, op, right);
         }

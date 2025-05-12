@@ -1,7 +1,7 @@
 procedure Circle {
 t = 1;
-a = t + 10;
-d = a + 2;
+a = t - 10;
+d = a * 2;
 b = t + a + d + 3;
 c = b + 5 + 42;
 
