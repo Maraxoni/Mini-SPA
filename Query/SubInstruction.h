@@ -8,25 +8,25 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../pkb.h"
+#include "SynonymConstraint.h"
+namespace query {
+    class SubInstruction {
+    public:
+        std::string relation;
+        std::string left_param;
+        std::string right_param;
+        std::vector<SynonymConstraint > synonym_constraints;
 
-class SubInstruction {
-public:
-    std::string relation;
-    std::string param1;
-    std::string param2;
-    std::string synonym;
-    std::string attribute;
-    std::string value;
-    std::unordered_map<std::shared_ptr<TNode>, std::vector<std::shared_ptr<TNode>>> resultsMap;
+        SubInstruction() = default;
 
-    SubInstruction() = default;
+        SubInstruction(const std::string &rel, const std::string &left_p, const std::string &right_p)
+            : relation(rel), left_param(left_p), right_param(right_p) {
+        }
 
-    SubInstruction(const std::string &rel, const std::string &p1, const std::string &p2, const std::string &syn = "",
-                   const std::string &attr = "", const std::string &val = "")
-        : relation(rel), param1(p1), param2(p2), synonym(syn), attribute(attr), value(val) {
-    }
-};
-
+        void add_synonym_constraint(const SynonymConstraint  &synonmym_constraint) {
+            synonym_constraints.push_back(synonmym_constraint);
+        }
+    };
+}
 
 #endif //SUBINSTRUCTION_H

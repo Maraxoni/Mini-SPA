@@ -8,4 +8,6 @@ add_executable(MiniSPA parser.cpp parser.h nodes.h main.cpp utils.cpp utils.h
         Query/Instruction.cpp
         Query/Instruction.h
         Query/SubInstruction.cpp
-        Query/SubInstruction.h)
+        Query/SubInstruction.h
+        Query/SynonymConstraint.cpp
+        Query/SynonymConstraint.h)

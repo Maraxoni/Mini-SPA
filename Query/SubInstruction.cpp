@@ -3,3 +3,6 @@
 //
 
 #include "SubInstruction.h"
+
+namespace query {
+} // query
