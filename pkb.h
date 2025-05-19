@@ -8,6 +8,8 @@
 //#include "storage.h"
 
 //#include "nodes.h"
+#include <array>
+
 #include "parser.h"
 
 enum TNode_type : int {
@@ -99,6 +101,13 @@ private:
 class PKB {
 public:
 
+    static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> parentRelations;
+    static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> parentTRelations;
+    static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> followsRelations;
+    static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> followsTRelations;
+    static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> modifiesRelations;
+    static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> usesRelations;
+
     //don't allow copying
     PKB(PKB const &) = delete;
 
@@ -117,6 +126,7 @@ public:
 
     void initialize() {
         this->build_AST();
+        this->build_relations();
     }
 
     static std::vector<std::shared_ptr<Node>> get_tnode_children_as_node(const std::shared_ptr<TNode> &TNode) {
@@ -239,17 +249,6 @@ public:
         return command_no;
     }
 
-
-
-    // not necessary for now, maybe will be useful later
-    // const std::vector<std::shared_ptr<Procedure>>& get_procedure_list() const {
-    //     return procedure_list;
-    // }
-    //
-    // void store_procedure(std::shared_ptr<Procedure> procedure) {
-    //     procedure_list.push_back(std::move(procedure));
-    // }
-
     // node relations
     static bool is_statement(const std::shared_ptr<TNode> &node) {
         if (node->get_tnode_type() == TN_ASSIGN || node->get_tnode_type() == TN_WHILE)
@@ -280,7 +279,7 @@ public:
         for (const auto &child: get_tnode_children(node1)) {
             if (child == node2) {
                 return true;
-            } else {
+            } else if (child->get_tnode_type() != TN_FACTOR) {
                 result = parentT(child, node2) ? true : result;
             }
         }
@@ -413,6 +412,34 @@ private:
     std::vector<std::shared_ptr<TNode>> tnode_list{};
 
     PKB() = default;
+
+    void build_relations() {
+        auto const nodes1 = get_ast_as_list(this->rootNode);
+        for (const auto &node1: nodes1) {
+            // auto nodes2 = get_ast_as_list(this->rootNode);
+            for (const auto &node2 : nodes1) {
+                if (node1 == node2) { continue; }
+                if (node1->get_tnode_type() != TN_FACTOR && parent(node1, node2)) {
+                    parentRelations->emplace_back(*node1, *node2);
+                }
+                if (node1->get_tnode_type() != TN_FACTOR && parentT(node1, node2)) {
+                    parentTRelations->emplace_back(*node1, *node2);
+                }
+                if (is_statement(node1) && is_statement(node2) && follows(node1, node2)) {
+                    followsRelations->emplace_back(*node1, *node2);
+                }
+                if (is_statement(node1) && is_statement(node2) && followsT(node1, node2)) {
+                    followsTRelations->emplace_back(*node1, *node2);
+                }
+                if (node2->get_tnode_type() == TN_FACTOR && modifies(node1, node2)) {
+                    modifiesRelations->emplace_back(*node1, *node2);
+                }
+                if (node2->get_tnode_type() == TN_FACTOR && uses(node1, node2)) {
+                    usesRelations->emplace_back(*node1, *node2);
+                }
+            }
+        }
+    }
 
     std::shared_ptr<TNode> build_AST() {
         if (!Parser::instance().initialized) {
