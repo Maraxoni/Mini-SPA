@@ -16,6 +16,9 @@ enum TokenType : int {
     NAME,  // var_name
     INTEGER,  // const_value
     CALL,  // call
+    IF,     // if
+    THEN,   // then
+    ELSE,    // else
     LBRACE, // {
     RBRACE, // }
     EQUAL,  // =
@@ -115,9 +118,11 @@ public:
 
             if (value == "procedure") return {TokenType::PROCEDURE, value};
             if (value == "while") return {TokenType::WHILE, value};
-            //TODO: call, if, else, return, ...
+            //TODO: return, ...
             if (value == "call") return {TokenType::CALL, value};
-
+            if (value == "if") return {TokenType::IF, value};
+            if (value == "then") return {TokenType::THEN, value};
+            if (value == "else") return {TokenType::ELSE, value};
             // if not a keyword, then it is a variable name
             return {TokenType::NAME, value};
         }
@@ -278,7 +283,9 @@ public:
         std::vector<std::shared_ptr<Node>> stmts;
         while (currentToken.type == TokenType::NAME
                || currentToken.type == TokenType::WHILE
-               || currentToken.type == TokenType::CALL) {
+               || currentToken.type == TokenType::CALL
+               || currentToken.type == TokenType::IF
+               ) {
             stmts.push_back(parse_stmt());
         }
         return stmts;
@@ -288,6 +295,7 @@ public:
         if (currentToken.type == TokenType::NAME) return parse_assign();
         if (currentToken.type == TokenType::WHILE) return parse_while();
         if (currentToken.type == TokenType::CALL) return parse_call();
+        if (currentToken.type == TokenType::IF) return parse_if();
 
         fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token in statement " + currentToken.to_string());
         return nullptr;
@@ -308,6 +316,24 @@ public:
         eat_and_read_next_token(TokenType::RBRACE);
         return std::make_shared<WhileStmt>(var_name, stmt_list);
     }
+    std::shared_ptr<Node> parse_if() {
+        eat_and_read_next_token(TokenType::IF);
+        std::string var_name = currentToken.value;
+        eat_and_read_next_token(TokenType::NAME);
+
+        eat_and_read_next_token(TokenType::THEN);
+        eat_and_read_next_token(TokenType::LBRACE);
+        auto then_stmts = parse_stmt_list();
+        eat_and_read_next_token(TokenType::RBRACE);
+
+        eat_and_read_next_token(TokenType::ELSE);
+        eat_and_read_next_token(TokenType::LBRACE);
+        auto else_stmts = parse_stmt_list();
+        eat_and_read_next_token(TokenType::RBRACE);
+
+        return std::make_shared<IfStmt>(var_name, then_stmts, else_stmts);
+    }
+
 
     std::shared_ptr<Assign> parse_assign() {
         std::string var_name = currentToken.value;

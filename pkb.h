@@ -16,7 +16,8 @@ enum TNode_type : int {
     TN_ASSIGN,
     TN_EXPRESSION,
     TN_FACTOR,
-    TN_CALL
+    TN_CALL,
+    TN_IF
 };
 
 class TNode {
@@ -75,7 +76,10 @@ public:
             type = TN_FACTOR;
         }else if (std::dynamic_pointer_cast<Call>(node)) {
             type = TN_CALL;
+        }else if (std::dynamic_pointer_cast<IfStmt>(node)) {
+            type = TN_IF;
         }
+
     }
 
     [[nodiscard]] std::vector<std::shared_ptr<Node>> get_stmt_list() const {
@@ -159,6 +163,18 @@ public:
             case TN_CALL: { // Todo:rekur
                 break;
             }
+            case TN_IF: {  // if /as wh
+                auto if_node = std::dynamic_pointer_cast<IfStmt>(TNode->get_node());
+                children.push_back(std::make_shared<Factor>(if_node->var_name));
+                for (const auto& stmt : if_node->then_stmt_list) {
+                    children.push_back(stmt);
+                }
+                for (const auto& stmt : if_node->else_stmt_list) {
+                    children.push_back(stmt);
+                }
+                break;
+            }
+
         }
 
         return children;
