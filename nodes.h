@@ -173,5 +173,23 @@ public:
 
 };
 
+// call  atm print
+// TODO: recurencje?
+
+class Call : public Node {
+public:
+    std::string proc_name;
+
+    explicit Call(const std::string &proc_name) : proc_name(proc_name) {}
+
+    [[nodiscard]]  std::string to_string() const override {
+        return "call " + proc_name + ";";
+    }
+
+    void print(int indent = 0) const override {
+        print_indent(indent);
+        std::cout << "Call: " << proc_name << "\n";
+    }
+};
 
 #endif //MINISPA_NODES_H

@@ -15,6 +15,7 @@ enum TokenType : int {
     WHILE,  // while
     NAME,  // var_name
     INTEGER,  // const_value
+    CALL,  // call
     LBRACE, // {
     RBRACE, // }
     EQUAL,  // =
@@ -115,6 +116,7 @@ public:
             if (value == "procedure") return {TokenType::PROCEDURE, value};
             if (value == "while") return {TokenType::WHILE, value};
             //TODO: call, if, else, return, ...
+            if (value == "call") return {TokenType::CALL, value};
 
             // if not a keyword, then it is a variable name
             return {TokenType::NAME, value};
@@ -183,7 +185,6 @@ private:
                                                        currentToken.to_string());
         }
     }
-
     static bool load_code_from_file(const std::string &filePath, std::string &code) {
         //open file
         std::ifstream t(filePath);
@@ -275,7 +276,9 @@ public:
 
     std::vector<std::shared_ptr<Node>> parse_stmt_list() {
         std::vector<std::shared_ptr<Node>> stmts;
-        while (currentToken.type == TokenType::NAME || currentToken.type == TokenType::WHILE) {
+        while (currentToken.type == TokenType::NAME
+               || currentToken.type == TokenType::WHILE
+               || currentToken.type == TokenType::CALL) {
             stmts.push_back(parse_stmt());
         }
         return stmts;
@@ -284,6 +287,7 @@ public:
     std::shared_ptr<Node> parse_stmt() {
         if (currentToken.type == TokenType::NAME) return parse_assign();
         if (currentToken.type == TokenType::WHILE) return parse_while();
+        if (currentToken.type == TokenType::CALL) return parse_call();
 
         fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token in statement " + currentToken.to_string());
         return nullptr;
@@ -371,6 +375,16 @@ public:
         fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token " + currentToken.to_string());
         return nullptr;
     }
+    std::shared_ptr<Call> parse_call() {
+        eat_and_read_next_token(TokenType::CALL);
+
+        std::string proc_name = currentToken.value;
+        eat_and_read_next_token(TokenType::NAME);
+        eat_and_read_next_token(TokenType::SEMICOLON);
+
+        return std::make_shared<Call>(proc_name);
+    }
+
 
 };
 

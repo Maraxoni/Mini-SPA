@@ -15,7 +15,8 @@ enum TNode_type : int {
     TN_WHILE,
     TN_ASSIGN,
     TN_EXPRESSION,
-    TN_FACTOR
+    TN_FACTOR,
+    TN_CALL
 };
 
 class TNode {
@@ -72,6 +73,8 @@ public:
             type = TN_EXPRESSION;
         } else if (std::dynamic_pointer_cast<Factor>(node)) {
             type = TN_FACTOR;
+        }else if (std::dynamic_pointer_cast<Call>(node)) {
+            type = TN_CALL;
         }
     }
 
@@ -151,6 +154,9 @@ public:
             }
                 // factor can't have children, returning empty list
             case TN_FACTOR: {
+                break;
+            }
+            case TN_CALL: { // Todo:rekur
                 break;
             }
         }
