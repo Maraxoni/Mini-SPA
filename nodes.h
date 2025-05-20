@@ -90,6 +90,47 @@ public:
 
 };
 
+class IfStmt : public Node {
+public:
+    std::string var_name;
+    std::vector<std::shared_ptr<Node>> then_stmt_list;
+    std::vector<std::shared_ptr<Node>> else_stmt_list;
+
+    IfStmt(const std::string& var_name,
+           const std::vector<std::shared_ptr<Node>>& then_stmt_list,
+           const std::vector<std::shared_ptr<Node>>& else_stmt_list)
+            : var_name(var_name), then_stmt_list(then_stmt_list), else_stmt_list(else_stmt_list) {}
+
+    [[nodiscard]] std::string to_string() const override {
+        std::string result = "=== if " + var_name + " then {\n";
+        for (const auto& stmt : then_stmt_list) {
+            result += stmt->to_string() + "\n";
+        }
+        result += "} end if === else {\n";
+        for (const auto& stmt : else_stmt_list) {
+            result += stmt->to_string() + "\n";
+        }
+        result += "} === end else";
+        return result;
+    }
+
+    void print(int indent = 0) const override {
+        print_indent(indent);
+        std::cout << "If: " << var_name << "\n";
+        print_indent(indent);
+        std::cout << "Then:\n";
+        for (const auto& stmt : then_stmt_list) {
+            stmt->print(indent + 1);
+        }
+        print_indent(indent);
+        std::cout << "Else:\n";
+        for (const auto& stmt : else_stmt_list) {
+            stmt->print(indent + 1);
+        }
+    }
+};
+
+
 // assign : var_name ‘=’ expr ‘;’
 class Assign : public Node {
 public:
@@ -173,5 +214,23 @@ public:
 
 };
 
+// call  atm print
+// TODO: recurencje?
+
+class Call : public Node {
+public:
+    std::string proc_name;
+
+    explicit Call(const std::string &proc_name) : proc_name(proc_name) {}
+
+    [[nodiscard]]  std::string to_string() const override {
+        return "call " + proc_name + ";";
+    }
+
+    void print(int indent = 0) const override {
+        print_indent(indent);
+        std::cout << "Call: " << proc_name << "\n";
+    }
+};
 
 #endif //MINISPA_NODES_H
