@@ -42,28 +42,28 @@ namespace query {
         std::vector<std::shared_ptr<TNode> > allNodes = PKB::get_ast_as_list(rootNode);
 
         // Lists of nodes of certain types
-        std::vector<std::shared_ptr<TNode> > procedureNodes;
-        std::vector<std::shared_ptr<TNode> > whileNodes;
-        std::vector<std::shared_ptr<TNode> > assignNodes;
-        std::vector<std::shared_ptr<TNode> > exprNodes;
-        std::vector<std::shared_ptr<TNode> > factorNodes;
+        // std::vector<std::shared_ptr<TNode> > procedureNodes;
+        // std::vector<std::shared_ptr<TNode> > whileNodes;
+        // std::vector<std::shared_ptr<TNode> > assignNodes;
+        // std::vector<std::shared_ptr<TNode> > exprNodes;
+        // std::vector<std::shared_ptr<TNode> > factorNodes;
 
         // Checking node types and filling lists with nodes
-        for (const auto &node: allNodes) {
-            if (node->get_tnode_type() == TN_PROCEDURE) {
-                procedureNodes.push_back(node);
-            }
-            if (node->get_tnode_type() == TN_WHILE) {
-                whileNodes.push_back(node);
-            }
-            if (node->get_tnode_type() == TN_ASSIGN) {
-                assignNodes.push_back(node);
-            } else if (node->get_tnode_type() == TN_EXPRESSION) {
-                exprNodes.push_back(node);
-            } else if (node->get_tnode_type() == TN_FACTOR) {
-                factorNodes.push_back(node);
-            }
-        }
+        // for (const auto &node: allNodes) {
+        //     if (node->get_tnode_type() == TN_PROCEDURE) {
+        //         procedureNodes.push_back(node);
+        //     }
+        //     if (node->get_tnode_type() == TN_WHILE) {
+        //         whileNodes.push_back(node);
+        //     }
+        //     if (node->get_tnode_type() == TN_ASSIGN) {
+        //         assignNodes.push_back(node);
+        //     } else if (node->get_tnode_type() == TN_EXPRESSION) {
+        //         exprNodes.push_back(node);
+        //     } else if (node->get_tnode_type() == TN_FACTOR) {
+        //         factorNodes.push_back(node);
+        //     }
+        // }
         // Select pattern with such that or and
         std::regex selectPattern(
             R"(Select\s+(\w+)\s+(such\s+that|and)\s+(.*))"
@@ -130,32 +130,33 @@ namespace query {
             }
         }
 
-        std::cout << "\nProcedure Nodes: ";
-        for (const auto &node: procedureNodes) {
-            std::cout << node->to_string() << ",";
-        }
-        std::cout << "\nWhile Nodes: ";
-        for (const auto &node: whileNodes) {
-            std::cout << node->to_string() << ",";
-        }
-        std::cout << "\nAssign Nodes: ";
-        for (const auto &node: assignNodes) {
-            //std::cout << node->to_string() << ",";
-            std::cout << node->get_command_no() << ",";
-        }
-        std::cout << "\nExpression Nodes: ";
-        for (const auto &node: exprNodes) {
-            //std::cout << node->to_string() << ",";
-            std::cout << node->get_command_no() << ",";
-        }
-        std::cout << "\nFactor Nodes: ";
-        for (const auto &node: factorNodes) {
-            //std::cout << node->to_string() << ",";
-            std::cout << node->get_command_no() << ",";
-        }
+        // std::cout << "\nProcedure Nodes: ";
+        // for (const auto &node: procedureNodes) {
+        //     std::cout << node->to_string() << ",";
+        // }
+        // std::cout << "\nWhile Nodes: ";
+        // for (const auto &node: whileNodes) {
+        //     std::cout << node->to_string() << ",";
+        // }
+        // std::cout << "\nAssign Nodes: ";
+        // for (const auto &node: assignNodes) {
+        //     //std::cout << node->to_string() << ",";
+        //     std::cout << node->get_command_no() << ",";
+        // }
+        // std::cout << "\nExpression Nodes: ";
+        // for (const auto &node: exprNodes) {
+        //     //std::cout << node->to_string() << ",";
+        //     std::cout << node->get_command_no() << ",";
+        // }
+        // std::cout << "\nFactor Nodes: ";
+        // for (const auto &node: factorNodes) {
+        //     //std::cout << node->to_string() << ",";
+        //     std::cout << node->get_command_no() << ",";
+        // }
 
         for (auto &instr: instructions) {
             instr.print_instruction();
+            instr.print_relations();
             //instr.process_query(procedureNodes, whileNodes, assignNodes, exprNodes, factorNodes);
             //instr.print_subquery_results_to_file(outputFile);
         }
