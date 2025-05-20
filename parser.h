@@ -21,6 +21,8 @@ enum TokenType : int {
     ELSE,    // else
     LBRACE, // {
     RBRACE, // }
+    LPAREN,  // '('
+    RPAREN,   // ')'
     EQUAL,  // =
     PLUS,   // +
     MINUS,  // -
@@ -144,6 +146,14 @@ public:
         if (currentChar == '}') {
             advance();
             return {TokenType::RBRACE, "}"};
+        }
+        if (currentChar == '(') {
+            advance();
+            return {TokenType::LPAREN, "("};
+        }
+        if (currentChar == ')') {
+            advance();
+            return {TokenType::RPAREN, ")"};
         }
         if (currentChar == '=') {
             advance();
@@ -375,6 +385,13 @@ public:
     std::shared_ptr<Node> parse_factor() {
         if (!initialized) {
             return nullptr;
+        }
+
+        if (currentToken.type == TokenType::LPAREN) {
+            eat_and_read_next_token(TokenType::LPAREN);
+            auto expr = parse_expr();
+            eat_and_read_next_token(TokenType::RPAREN);
+            return expr;
         }
 
         if (currentToken.type == TokenType::NAME) {
