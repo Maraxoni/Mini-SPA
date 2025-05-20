@@ -195,56 +195,56 @@ namespace query {
 
             bool first = true;
 
-            for (SubInstruction &sub: sub_instructions) {
-                if (first) {
-                    // Checking relation types and running functions
-                    if (sub.relation == "Follows") {
-                        std::cout << "Checking Follows relation\n";
-                        process_query_searching_nodes(whileNodes, whileNodes, sub);
-                    } else if (sub.relation == "Follows*") {
-                        std::cout << "Checking Follows* relation\n";
-                        process_query_searching_nodes(whileNodes, whileNodes, sub);
-                    } else if (sub.relation == "Parent") {
-                        std::cout << "Checking Parent relation\n";
-                        process_query_searching_nodes(whileNodes, whileNodes, sub);
-                    } else if (sub.relation == "Parent*") {
-                        std::cout << "Checking Parent* relation\n";
-                        process_query_searching_nodes(whileNodes, whileNodes, sub);
-                    } else if (sub.relation == "Modifies") {
-                        std::cout << "Checking Modifies relation\n";
-                        process_query_searching_nodes(assignNodes, factorNodes, sub);
-                    } else if (sub.relation == "Uses") {
-                        std::cout << "Checking Uses relation\n";
-                        process_query_searching_nodes(assignNodes, factorNodes, sub);
-                    } else {
-                        std::cout << "Unknown relation type\n";
-                    }
-                    first = false;
-                } else {
-                    if (sub.relation == "Follows") {
-                        std::cout << "Checking Follows relation\n";
-                        process_query_searching_nodes(whileNodes, whileNodes, sub);
-                    } else if (sub.relation == "Follows*") {
-                        std::cout << "Checking Follows* relation\n";
-                        process_query_searching_nodes(whileNodes, whileNodes, sub);
-                    } else if (sub.relation == "Parent") {
-                        std::cout << "Checking Parent relation\n";
-                        process_query_searching_nodes(whileNodes, whileNodes, sub);
-                    } else if (sub.relation == "Parent*") {
-                        std::cout << "Checking Parent* relation\n";
-                        process_query_searching_nodes(whileNodes, whileNodes, sub);
-                    } else if (sub.relation == "Modifies") {
-                        std::cout << "Checking Modifies relation\n";
-                        process_query_searching_nodes(exprNodes, factorNodes, sub);
-                    } else if (sub.relation == "Uses") {
-                        std::cout << "Checking Uses relation\n";
-                        process_query_searching_nodes(exprNodes, factorNodes, sub);
-                    } else {
-                        std::cout << "Unknown relation type\n";
-                    }
-                }
-
-            }
+//            for (SubInstruction &sub: sub_instructions) {
+//                if (first) {
+//                    // Checking relation types and running functions
+//                    if (sub.relation == "Follows") {
+//                        std::cout << "Checking Follows relation\n";
+//                        process_query_searching_nodes(whileNodes, whileNodes, sub);
+//                    } else if (sub.relation == "Follows*") {
+//                        std::cout << "Checking Follows* relation\n";
+//                        process_query_searching_nodes(whileNodes, whileNodes, sub);
+//                    } else if (sub.relation == "Parent") {
+//                        std::cout << "Checking Parent relation\n";
+//                        process_query_searching_nodes(whileNodes, whileNodes, sub);
+//                    } else if (sub.relation == "Parent*") {
+//                        std::cout << "Checking Parent* relation\n";
+//                        process_query_searching_nodes(whileNodes, whileNodes, sub);
+//                    } else if (sub.relation == "Modifies") {
+//                        std::cout << "Checking Modifies relation\n";
+//                        process_query_searching_nodes(assignNodes, factorNodes, sub);
+//                    } else if (sub.relation == "Uses") {
+//                        std::cout << "Checking Uses relation\n";
+//                        process_query_searching_nodes(assignNodes, factorNodes, sub);
+//                    } else {
+//                        std::cout << "Unknown relation type\n";
+//                    }
+//                    first = false;
+//                } else {
+//                    if (sub.relation == "Follows") {
+//                        std::cout << "Checking Follows relation\n";
+//                        process_query_searching_nodes(whileNodes, whileNodes, sub);
+//                    } else if (sub.relation == "Follows*") {
+//                        std::cout << "Checking Follows* relation\n";
+//                        process_query_searching_nodes(whileNodes, whileNodes, sub);
+//                    } else if (sub.relation == "Parent") {
+//                        std::cout << "Checking Parent relation\n";
+//                        process_query_searching_nodes(whileNodes, whileNodes, sub);
+//                    } else if (sub.relation == "Parent*") {
+//                        std::cout << "Checking Parent* relation\n";
+//                        process_query_searching_nodes(whileNodes, whileNodes, sub);
+//                    } else if (sub.relation == "Modifies") {
+//                        std::cout << "Checking Modifies relation\n";
+//                        process_query_searching_nodes(exprNodes, factorNodes, sub);
+//                    } else if (sub.relation == "Uses") {
+//                        std::cout << "Checking Uses relation\n";
+//                        process_query_searching_nodes(exprNodes, factorNodes, sub);
+//                    } else {
+//                        std::cout << "Unknown relation type\n";
+//                    }
+//                }
+//
+//            }
         }
 
         // void process_query_searching_nodes(std::vector<std::shared_ptr<TNode> > nodes1,

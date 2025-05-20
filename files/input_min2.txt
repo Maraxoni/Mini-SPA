@@ -41,7 +41,31 @@ while k {
     a = t + a + d + k + b + c + 19;
 }
 
+call x;
 c = t + k + d + x + 21;
-t = a + t + c + 4 + 23;
+
+if temporary then {
+    call x; }
+  else {
+    if temporary then {
+        call x; }
+      else {
+        while c {
+                while c {
+                    while c {
+                        k = a + d + 7;
+                        d = d + t + c + 9;
+                        c = d + 1 + 8;
+                    }
+                k = a + d + 7;
+                d = d + t + c + 9;
+                c = d + 1 + 8;
+            }
+            k = a + d + 7;
+            d = d + t + c + 9;
+            c = d + 1 + 8;
+        } } }
+
+t = a + t + (c + 4) + 23;
 }
 
