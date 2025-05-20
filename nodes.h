@@ -220,6 +220,7 @@ public:
 class Call : public Node {
 public:
     std::string proc_name;
+    // std::shared_ptr<Node> procedure;
 
     explicit Call(const std::string &proc_name) : proc_name(proc_name) {}
 
