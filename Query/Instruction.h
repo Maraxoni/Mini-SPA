@@ -24,7 +24,7 @@ namespace query {
         std::string select;
         std::vector<SubInstruction> sub_instructions;
 
-        std::unordered_map<std::string, std::unordered_set<int>> variableResults;
+        std::vector<std::unordered_map<std::string, int> > variableResults;
 
         Instruction(const std::string &sel) : select(sel) {
         }
@@ -33,7 +33,7 @@ namespace query {
             sub_instructions.push_back(sub);
         }
 
-        SubInstruction& get_last_sub_instruction() {
+        SubInstruction &get_last_sub_instruction() {
             if (sub_instructions.empty()) {
                 throw std::out_of_range("No sub-instructions available.");
             }
@@ -44,7 +44,7 @@ namespace query {
             std::cout << "Select " << select << " such that ";
             bool first_sub_i = true;
 
-            for (const auto &sub : sub_instructions) {
+            for (const auto &sub: sub_instructions) {
                 if (!first_sub_i) {
                     std::cout << " and ";
                 } else {
@@ -57,7 +57,7 @@ namespace query {
                 for (size_t i = 0; i < sub.synonym_constraints.size(); ++i) {
                     const auto &syn = sub.synonym_constraints[i];
                     std::cout << (i == 0 ? " with " : " and ")
-                              << syn.synonym << "." << syn.attribute << " = " << syn.value;
+                            << syn.synonym << "." << syn.attribute << " = " << syn.value;
                 }
             }
 
@@ -78,83 +78,146 @@ namespace query {
                 for (size_t i = 0; i < sub.synonym_constraints.size(); ++i) {
                     const auto &syn = sub.synonym_constraints[i];
                     processQueryFile << (i == 0 ? " with " : " and ")
-                              << syn.synonym << "." << syn.attribute << " = " << syn.value;
+                            << syn.synonym << "." << syn.attribute << " = " << syn.value;
                 }
             }
             processQueryFile << std::endl;
         }
 
-        void print_final_results_to_file(std::ofstream &processQueryFile) {
+        void print_final_results_to_file(std::ofstream &processQueryFile) const {
             print_instruction_to_file(processQueryFile);
+            processQueryFile << "Results for Select " << select << ":\n";
 
+            std::unordered_set<int> seen;
+            for (const auto &row: variableResults) {
+                if (row.count(select)) {
+                    seen.insert(row.at(select));
+                }
+            }
+
+            for (int val: seen) {
+                processQueryFile << val << ", ";
+            }
+            processQueryFile << "\n";
         }
 
-        void print_subquery_results_to_file(std::ofstream &processQueryFile) {
+        void print_distinct_results_to_file(std::ofstream &processQueryFile) {
             print_instruction_to_file(processQueryFile);
+            processQueryFile << "Grouped results for Select " << select << ":\n";
 
+            // Map
+            std::unordered_map<int, std::unordered_set<int> > resultGroups;
+
+            for (const auto &row: variableResults) {
+                if (!row.count(select)) continue;
+                int mainVal = row.at(select);
+
+                for (const auto &[key, val]: row) {
+                    if (key == select) continue;
+                    resultGroups[mainVal].insert(val);
+                }
+            }
+
+            for (const auto &[mainVal, relatedVals]: resultGroups) {
+                processQueryFile << mainVal << ": ";
+                bool first = true;
+                for (int val: relatedVals) {
+                    if (!first) processQueryFile << ", ";
+                    processQueryFile << val;
+                    first = false;
+                }
+                processQueryFile << " | ";
+            }
+            processQueryFile << "\n";
         }
 
-        void print_relations() {
-            std::cout << "Follows" << std::endl;
-            for (const auto& [left, right] : *PKB::followsRelations) {
-                std::cout << left.get_command_no() << ": " << right.get_command_no() <<", ";
-            }
-            std::cout << "Follows*" << std::endl;
-            for (const auto& [left, right] : *PKB::followsTRelations) {
-                std::cout << left.get_command_no() << ": " << right.get_command_no() <<", ";
-            }
-            std::cout << "Parent" << std::endl;
-            for (const auto& [left, right] : *PKB::parentRelations) {
-                std::cout << left.get_command_no() << ": " << right.get_command_no() <<", ";
-            }
-            std::cout << "Parent*" << std::endl;
-            for (const auto& [left, right] : *PKB::parentTRelations) {
-                std::cout << left.get_command_no() << ": " << right.get_command_no() <<", ";
-            }
-            std::cout << "Modifies" << std::endl;
-            for (const auto& [left, right] : *PKB::modifiesRelations) {
-                std::cout << left.get_command_no() << ": " << right.get_command_no() <<", ";
-            }
-            std::cout << "Uses" << std::endl;
-            for (const auto& [left, right] : *PKB::usesRelations) {
-                std::cout << left.get_command_no() << ": " << right.get_command_no() <<", ";
-            }
+        void print_subquery_results(std::ofstream &processQueryFile) const {
         }
 
         void process_query() {
             std::cout << "Searching parsed code for: " << select << std::endl;
 
-            for (const SubInstruction &sub : sub_instructions) {
-                std::shared_ptr<std::vector<std::pair<TNode, TNode>>> relationVec;
+            std::vector<std::unordered_map<std::string, int> > intermediateResults;
+
+            for (const SubInstruction &sub: sub_instructions) {
+                std::shared_ptr<std::vector<std::pair<TNode, TNode> > > relationVec;
 
                 if (sub.relation == "Follows") {
-                    std::cout << "Checking Follows relation\n";
                     relationVec = PKB::followsRelations;
                 } else if (sub.relation == "Follows*") {
-                    std::cout << "Checking Follows* relation\n";
                     relationVec = PKB::followsTRelations;
                 } else if (sub.relation == "Parent") {
-                    std::cout << "Checking Parent relation\n";
                     relationVec = PKB::parentRelations;
                 } else if (sub.relation == "Parent*") {
-                    std::cout << "Checking Parent* relation\n";
                     relationVec = PKB::parentTRelations;
                 } else if (sub.relation == "Modifies") {
-                    std::cout << "Checking Modifies relation\n";
                     relationVec = PKB::modifiesRelations;
                 } else if (sub.relation == "Uses") {
-                    std::cout << "Checking Uses relation\n";
                     relationVec = PKB::usesRelations;
                 } else {
-                    std::cout << "Unknown relation type: " << sub.relation << "\n";
+                    std::cout << "Unknown relation: " << sub.relation << "\n";
                     continue;
                 }
 
-                // for (true) {
-                //     _sleep(1);
-                // }
+                std::vector<std::unordered_map<std::string, int> > currentRelationResults;
 
+                for (const auto &[left, right]: *relationVec) {
+                    std::unordered_map<std::string, int> row;
+
+                    if (!query_is_number(sub.left_param)) {
+                        row[sub.left_param] = left.get_command_no();
+                    } else if (std::stoi(sub.left_param) != left.get_command_no()) {
+                        continue; // liczba nie pasuje
+                    }
+
+                    if (!query_is_number(sub.right_param)) {
+                        row[sub.right_param] = right.get_command_no();
+                    } else if (std::stoi(sub.right_param) != right.get_command_no()) {
+                        continue;
+                    }
+
+                    currentRelationResults.push_back(row);
+                }
+
+                // JOIN z poprzednimi wynikami
+                if (intermediateResults.empty()) {
+                    intermediateResults = currentRelationResults;
+                } else {
+                    intermediateResults = join_results(intermediateResults, currentRelationResults);
+                }
             }
+
+            variableResults = intermediateResults;
+        }
+
+        std::vector<std::unordered_map<std::string, int> >
+        join_results(const std::vector<std::unordered_map<std::string, int> > &existing,
+                     const std::vector<std::unordered_map<std::string, int> > &incoming) {
+            std::vector<std::unordered_map<std::string, int> > result;
+
+            for (const auto &eRow: existing) {
+                for (const auto &iRow: incoming) {
+                    bool match = true;
+                    std::unordered_map<std::string, int> merged = eRow;
+
+                    for (const auto &[key, val]: iRow) {
+                        if (merged.count(key)) {
+                            if (merged[key] != val) {
+                                match = false;
+                                break;
+                            }
+                        } else {
+                            merged[key] = val;
+                        }
+                    }
+
+                    if (match) {
+                        result.push_back(std::move(merged));
+                    }
+                }
+            }
+
+            return result;
         }
 
 

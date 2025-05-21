@@ -8,7 +8,7 @@
 namespace query {
     // Query processing function
     void processQueries();
-
+    void print_relations();
 }
 
 #endif //QUERY_H

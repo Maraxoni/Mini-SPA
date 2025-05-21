@@ -1,4 +1,7 @@
+Select s1 such that Follows* (s1, s2)
+Select s2 such that Follows* (s1, s2)
 Select s1 such that Follows (s1, s2)
+Select s2 such that Follows (s1, s2)
 Select a such that Follows* (20, a)
 Select a such that Follows* (a, 20)
 Select a such that Modifies (a, "x") with a.stmt#= 28 with a.stmt#= 25

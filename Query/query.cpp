@@ -153,12 +153,12 @@ namespace query {
         //     //std::cout << node->to_string() << ",";
         //     std::cout << node->get_command_no() << ",";
         // }
-
+        print_relations();
         for (auto &instr: instructions) {
             instr.print_instruction();
-            instr.print_relations();
-            //instr.process_query(procedureNodes, whileNodes, assignNodes, exprNodes, factorNodes);
-            //instr.print_subquery_results_to_file(outputFile);
+            instr.process_query();
+            //instr.print_final_results_to_file(outputFile);
+            instr.print_distinct_results_to_file(outputFile);
         }
 
         // Closing files
@@ -166,5 +166,32 @@ namespace query {
         outputFile.close();
 
         std::cout << "Processing complete. Files saved." << outputFilePath << std::endl;
+    }
+
+    void print_relations() {
+        std::cout << "\nFollows" << std::endl;
+        for (const auto& [left, right] : *PKB::followsRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() <<"), ";
+        }
+        std::cout << "\nFollows*" << std::endl;
+        for (const auto& [left, right] : *PKB::followsTRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() <<"), ";
+        }
+        std::cout << "\nParent" << std::endl;
+        for (const auto& [left, right] : *PKB::parentRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() <<"), ";
+        }
+        std::cout << "\nParent*" << std::endl;
+        for (const auto& [left, right] : *PKB::parentTRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() <<"), ";
+        }
+        std::cout << "\nModifies" << std::endl;
+        for (const auto& [left, right] : *PKB::modifiesRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.to_string() <<"), ";
+        }
+        std::cout << "\nUses" << std::endl;
+        for (const auto& [left, right] : *PKB::usesRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.to_string() <<"), ";
+        }
     }
 }

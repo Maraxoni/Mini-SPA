@@ -6,6 +6,16 @@ b = t + a + d + 3;
 c = b + 5 + 42;
 
 while c {
+        while c {
+            while c {
+                k = a + d + 7;
+                d = d + t + c + 9;
+                c = d + 1 + 8;
+            }
+        k = a + d + 7;
+        d = d + t + c + 9;
+        c = d + 1 + 8;
+    }
     k = a + d + 7;
     d = d + t + c + 9;
     c = d + 1 + 8;
