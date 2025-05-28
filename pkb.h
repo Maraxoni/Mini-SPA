@@ -638,6 +638,16 @@ private:
                 if (node2->get_tnode_type() == TN_PROCEDURE && calls(node1, node2)) {
                     callsRelations->emplace_back(*node1, *node2);
                 }
+                // if (node1->get_tnode_type() != TN_EXPRESSION && node1->get_tnode_type() != TN_FACTOR &&
+                //     node2->get_tnode_type() != TN_EXPRESSION && node2->get_tnode_type() != TN_FACTOR &&
+                //     next(node1, node2)) {
+                //     nextRelations->emplace_back(*node1, *node2);
+                // }
+                // if (node1->get_tnode_type() != TN_EXPRESSION && node1->get_tnode_type() != TN_FACTOR &&
+                //     node2->get_tnode_type() != TN_EXPRESSION && node2->get_tnode_type() != TN_FACTOR &&
+                //     nextT(node1, node2)) {
+                //     nextTRelations->emplace_back(*node1, *node2);
+                // }
             }
         }
     }
