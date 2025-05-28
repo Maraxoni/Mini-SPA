@@ -62,6 +62,22 @@ public:
         this->right_sibling = sibling;
     }
 
+    [[nodiscard]] std::shared_ptr<TNode> get_parent() const {
+        return parent;
+    }
+
+    void set_parent(const std::shared_ptr<TNode> &parent) {
+        this->parent = parent;
+    }
+
+    [[nodiscard]] std::shared_ptr<TNode> get_left_sibling() const {
+        return left_sibling;
+    }
+
+    void set_left_sibling(const std::shared_ptr<TNode> &left_sibling) {
+        this->left_sibling = left_sibling;
+    }
+
     [[nodiscard]] TNode_type get_tnode_type() const {
         return type;
     }
@@ -117,6 +133,8 @@ private:
     std::shared_ptr<Node> node;
     std::shared_ptr<TNode> first_child;
     std::shared_ptr<TNode> right_sibling;
+    std::shared_ptr<TNode> parent;
+    std::shared_ptr<TNode> left_sibling;
     TNode_type type;
     int mCommand_no;
 };
@@ -131,6 +149,8 @@ public:
     static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> modifiesRelations;
     static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> usesRelations;
     static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> callsRelations;
+    static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> nextRelations;
+    static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> nextTRelations;
 
     //don't allow copying
     PKB(PKB const &) = delete;
@@ -223,17 +243,21 @@ public:
         else if (children.size() == 1) {
             const auto first_child = std::make_shared<TNode>(children[0]);
             parent->set_first_child(first_child);
+            first_child->set_parent(parent);
             set_tnode_children(first_child, get_tnode_children_as_node(first_child));
         } else {
             auto current_child = std::make_shared<TNode>(children[0]);
             std::shared_ptr<TNode> next_child;
             parent->set_first_child(current_child);
-            for (int i = 0; i < children.size() - 1; i++) {
+            for (int i = 0; i < children.size() - 1; i++) { // executes loop for every child but last
                 next_child = std::make_shared<TNode>(children[i + 1]);
+                current_child->set_parent(parent);
                 current_child->set_right_sibling(next_child);
+                next_child->set_left_sibling(current_child);
                 set_tnode_children(current_child, get_tnode_children_as_node(current_child));
                 current_child = next_child;
             }
+            current_child->set_parent(parent);
             set_tnode_children(current_child, get_tnode_children_as_node(current_child));
         }
     }
@@ -479,6 +503,104 @@ public:
             }
         }
         return false;
+    }
+
+    static bool next(const std::shared_ptr<TNode> &node1, const std::shared_ptr<TNode> &node2) {
+        if (node1->get_tnode_type() == TN_FACTOR || node2->get_tnode_type() == TN_FACTOR) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Factors can't be used in this relationship.");
+        }
+        if (node1->get_tnode_type() == TN_EXPRESSION) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Expressions can't be used in this relationship.");
+        }
+        switch (node1->get_tnode_type()) {
+        case TN_PROCEDURE:
+            if (node1->get_first_child() == node2) {
+                return true;
+            }
+        case TN_CALL:
+            if (next(node1->get_first_child(), node2)) {
+                return true;
+            }
+        // in IF TNode children there is no distinction between then and else stmt, we have to use Nodes instead
+        case TN_IF:
+            if (std::dynamic_pointer_cast<IfStmt>(node1->get_node())->then_stmt_list[0] == node2->get_node() ||
+                std::dynamic_pointer_cast<IfStmt>(node1->get_node())->else_stmt_list[0] == node2->get_node()) {
+                return true;
+            }
+        case TN_WHILE:
+            if (node1->get_first_child()->get_right_sibling() == node2) {
+                return true;
+            }
+        case TN_ASSIGN:
+            if (node1->get_right_sibling()) {
+                if (node1->get_right_sibling() == node2) {
+                    return true;
+                }
+            } else {
+                // node is last statement in the list
+                auto tmpTNode = node1->get_parent()->get_right_sibling();
+                if (tmpTNode && tmpTNode == node2) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    static bool nextT(const std::shared_ptr<TNode> &node1, const std::shared_ptr<TNode> &node2) {
+        if (node1->get_tnode_type() == TN_FACTOR || node2->get_tnode_type() == TN_FACTOR) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Factors can't be used in this relationship.");
+        }
+        if (node1->get_tnode_type() == TN_EXPRESSION) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Expressions can't be used in this relationship.");
+        }
+
+        bool result = false;
+        switch (node1->get_tnode_type()) {
+        case TN_PROCEDURE:
+            if (node1->get_first_child() == node2) {
+                return true;
+            } else if (node1->get_first_child()) {
+                result = nextT(node1->get_first_child(), node2) ? true : result;
+            }
+        case TN_CALL:
+            if (nextT(node1->get_first_child(), node2)) {
+                return true;
+            }
+            // in IF TNode children there is no distinction between then and else stmt, we have to use Nodes instead
+        case TN_IF:
+            if (std::dynamic_pointer_cast<IfStmt>(node1->get_node())->then_stmt_list[0] == node2->get_node() ||
+                std::dynamic_pointer_cast<IfStmt>(node1->get_node())->else_stmt_list[0] == node2->get_node()) {
+                return true;
+                } else if (node1->get_first_child()->get_right_sibling()) {
+                    result = nextT(node1->get_first_child()->get_right_sibling(), node2) ? true : result;
+                }
+        case TN_WHILE:
+            if (node1->get_first_child()->get_right_sibling() == node2) {
+                return true;
+            } else if (node1->get_first_child()->get_right_sibling()) {
+                result = nextT(node1->get_first_child()->get_right_sibling(), node2) ? true : result;
+            }
+        case TN_ASSIGN:
+            if (node1->get_right_sibling()) {
+                if (node1->get_right_sibling() == node2) {
+                    return true;
+                } else {
+                    result = nextT(node1->get_right_sibling(), node2) ? true : result;
+                }
+            } else {
+                // node is last statement in the list
+                auto psTNode = node1->get_parent()->get_right_sibling();
+                if (psTNode) {
+                    if (psTNode == node2) {
+                        return true;
+                    } else {
+                        result = nextT(psTNode, node2) ? true : result;
+                    }
+                }
+            }
+        }
+        return result;
     }
 
 private:
