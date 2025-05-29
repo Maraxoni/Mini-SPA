@@ -513,36 +513,46 @@ public:
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Expressions can't be used in this relationship.");
         }
         switch (node1->get_tnode_type()) {
-        case TN_PROCEDURE:
+        case TN_PROCEDURE: {
             if (node1->get_first_child() == node2) {
                 return true;
             }
-        case TN_CALL:
+            return false;
+        }
+        case TN_CALL: {
             if (next(node1->get_first_child(), node2)) {
                 return true;
             }
+            return false;
+        }
         // in IF TNode children there is no distinction between then and else stmt, we have to use Nodes instead
-        case TN_IF:
+        case TN_IF: {
             if (std::dynamic_pointer_cast<IfStmt>(node1->get_node())->then_stmt_list[0] == node2->get_node() ||
-                std::dynamic_pointer_cast<IfStmt>(node1->get_node())->else_stmt_list[0] == node2->get_node()) {
+                   std::dynamic_pointer_cast<IfStmt>(node1->get_node())->else_stmt_list[0] == node2->get_node()) {
                 return true;
-            }
-        case TN_WHILE:
+                   }
+            return false;
+        }
+        case TN_WHILE: {
             if (node1->get_first_child()->get_right_sibling() == node2) {
                 return true;
             }
-        case TN_ASSIGN:
+            return false;
+        }
+        case TN_ASSIGN: {
             if (node1->get_right_sibling()) {
                 if (node1->get_right_sibling() == node2) {
                     return true;
                 }
-            } else {
-                // node is last statement in the list
-                auto tmpTNode = node1->get_parent()->get_right_sibling();
-                if (tmpTNode && tmpTNode == node2) {
-                    return true;
-                }
+                return false;
             }
+            // node is last statement in the list
+            auto tmpTNode = node1->get_parent()->get_right_sibling();
+            if (tmpTNode && tmpTNode == node2) {
+                return true;
+            }
+            return false;
+        }
         }
         return false;
     }
@@ -638,16 +648,16 @@ private:
                 if (node2->get_tnode_type() == TN_PROCEDURE && calls(node1, node2)) {
                     callsRelations->emplace_back(*node1, *node2);
                 }
-                // if (node1->get_tnode_type() != TN_EXPRESSION && node1->get_tnode_type() != TN_FACTOR &&
-                //     node2->get_tnode_type() != TN_EXPRESSION && node2->get_tnode_type() != TN_FACTOR &&
-                //     next(node1, node2)) {
-                //     nextRelations->emplace_back(*node1, *node2);
-                // }
-                // if (node1->get_tnode_type() != TN_EXPRESSION && node1->get_tnode_type() != TN_FACTOR &&
-                //     node2->get_tnode_type() != TN_EXPRESSION && node2->get_tnode_type() != TN_FACTOR &&
-                //     nextT(node1, node2)) {
-                //     nextTRelations->emplace_back(*node1, *node2);
-                // }
+                if (node1->get_tnode_type() != TN_EXPRESSION && node1->get_tnode_type() != TN_FACTOR &&
+                    node2->get_tnode_type() != TN_EXPRESSION && node2->get_tnode_type() != TN_FACTOR &&
+                    next(node1, node2)) {
+                    nextRelations->emplace_back(*node1, *node2);
+                }
+                if (node1->get_tnode_type() != TN_EXPRESSION && node1->get_tnode_type() != TN_FACTOR &&
+                    node2->get_tnode_type() != TN_EXPRESSION && node2->get_tnode_type() != TN_FACTOR &&
+                    nextT(node1, node2)) {
+                    nextTRelations->emplace_back(*node1, *node2);
+                }
             }
         }
     }
