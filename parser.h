@@ -240,6 +240,9 @@ public:
         static Parser instance;
         return instance;
     }
+    const std::map<std::string, std::shared_ptr<Procedure>>& get_all_procedures() const {
+        return procedures;
+    }
 
 
     bool initialize_by_file(const std::string &filePath) {
@@ -296,6 +299,12 @@ public:
         procedure->print();
 
         return parsed_tree;
+    }
+
+    void parse_program() {
+        while (currentToken.type == TokenType::PROCEDURE) {
+            parse_procedure();
+        }
     }
 
     std::vector<std::shared_ptr<Node>> parse_stmt_list() {
