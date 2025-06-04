@@ -6,8 +6,8 @@
 #include "Query/query.h"
 
 int main() {
-    std::string path = "../files/input_min2.txt";
-//    std::string path = "../files/SIMPLE_Source_parser_test.txt";
+//    std::string path = "../files/input_min2.txt";
+    std::string path = "../files/SIMPLE_Source_parser_test.txt";
     if (!Parser::instance().initialize_by_file(path)) {
         fatal_error(__PRETTY_FUNCTION__, __LINE__, "Failed to initialize parser");
         return -1;

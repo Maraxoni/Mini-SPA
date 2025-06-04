@@ -102,6 +102,15 @@ private:
     }
 
 public:
+    size_t get_pos() const { return pos; }
+
+    void set_pos(size_t new_pos) {
+        pos = new_pos;
+        currentChar = (pos < code.size()) ? code[pos] : '\0';
+
+    }
+
+
     explicit Lexer(const std::string &code) {
         this->code = code;
         pos = 0;
@@ -187,10 +196,16 @@ public:
     }
 };
 
+struct UnresolvedProcedure {
+    std::string name;
+    size_t lexer_pos;
+};
+
 class Parser {
 private:
     Token currentToken{};
     std::map<std::string, std::shared_ptr<Procedure>> procedures;  // Procedure map
+    std::vector<UnresolvedProcedure> unresolved_procedures; //procedures waiting to pare with Call
     //verify if current token is the expected one
     //if so, eat it and read the next one (and set it as current)
     void eat_and_read_next_token(TokenType type) {
@@ -223,6 +238,14 @@ private:
         }
     }
 
+    void skip_block() {
+        int brace_count = 1;
+        while (brace_count > 0 && currentToken.type != TokenType::END) {
+            currentToken = lexer->next_token();
+            if (currentToken.type == TokenType::LBRACE) brace_count++;
+            if (currentToken.type == TokenType::RBRACE) brace_count--;
+        }
+    }
     //private constructor
     Parser() = default;
 
@@ -302,8 +325,28 @@ public:
     }
 
     void parse_program() {
+        // F1
         while (currentToken.type == TokenType::PROCEDURE) {
-            parse_procedure();
+            eat_and_read_next_token(TokenType::PROCEDURE);
+            std::string name = currentToken.value;
+            size_t block_start = lexer->get_pos();
+            eat_and_read_next_token(TokenType::NAME);
+            if (currentToken.type != TokenType::LBRACE) {
+                fatal_error(__PRETTY_FUNCTION__, __LINE__, "Expected '{' after procedure name");
+            }
+            procedures[name] = std::make_shared<Procedure>(name, std::vector<std::shared_ptr<Node>>{});
+            unresolved_procedures.push_back({name, block_start});
+            skip_block();
+            currentToken = lexer->next_token();
+        }
+        // F2
+        for (const auto& up : unresolved_procedures) {
+            lexer->set_pos(up.lexer_pos);
+            currentToken = lexer->next_token();
+            eat_and_read_next_token(TokenType::LBRACE);
+            auto stmt_list = parse_stmt_list();
+            eat_and_read_next_token(TokenType::RBRACE);
+            procedures[up.name]->stmt_list = stmt_list;
         }
     }
 

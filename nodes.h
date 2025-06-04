@@ -234,7 +234,7 @@ public:
 
     void print(int indent = 0) const override {
         print_indent(indent);
-        std::cout << "Call: " << proc_name << "\n";
+        std::cout << ">>> Call: " << proc_name << "\n";
     }
 };
 
