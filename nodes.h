@@ -220,9 +220,13 @@ public:
 class Call : public Node {
 public:
     std::string proc_name;
-    // std::shared_ptr<Node> procedure;
+    std::shared_ptr<Procedure> procedure;
 
     explicit Call(const std::string &proc_name) : proc_name(proc_name) {}
+
+    void set_procedure(const std::shared_ptr<Procedure>& proc) {
+        procedure = proc;
+    }
 
     [[nodiscard]]  std::string to_string() const override {
         return "call " + proc_name + ";";

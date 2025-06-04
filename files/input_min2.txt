@@ -41,14 +41,16 @@ while k {
     a = t + a + d + k + b + c + 19;
 }
 
-call x;
 c = t + k + d + x + 21;
 
 if temporary then {
-    call x; }
+k = a + d + 7;
+    }
   else {
+  k = a + d + 7;
     if temporary then {
-        call x; }
+    k = a + d + 7;
+         }
       else {
         while c {
                 while c {
@@ -69,3 +71,9 @@ if temporary then {
 t = a + t + (c + 4) + 23;
 }
 
+procedure circle2{
+  call Circle;
+  width = 1;
+  height = 0;
+  tmp = 0;
+}

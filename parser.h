@@ -443,7 +443,16 @@ public:
         eat_and_read_next_token(TokenType::NAME);
         eat_and_read_next_token(TokenType::SEMICOLON);
 
-        return std::make_shared<Call>(proc_name);
+        auto call_node = std::make_shared<Call>(proc_name);
+
+        auto it = procedures.find(proc_name);
+        if (it != procedures.end()) {
+            call_node->procedure = it->second;
+        } else {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Call to undefined procedure: " + proc_name);
+        }
+
+        return call_node;
     }
 
 
