@@ -5,6 +5,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include <map>
 
 #include "utils.h"
 #include "nodes.h"
@@ -189,7 +190,7 @@ public:
 class Parser {
 private:
     Token currentToken{};
-
+    std::map<std::string, std::shared_ptr<Procedure>> procedures;  // Procedure map
     //verify if current token is the expected one
     //if so, eat it and read the next one (and set it as current)
     void eat_and_read_next_token(TokenType type) {
@@ -286,6 +287,14 @@ public:
         eat_and_read_next_token(TokenType::RBRACE);
         parsed_tree = std::make_shared<Procedure>(name, stmt_list);
         parsed_tree->print();
+
+
+        auto procedure = std::make_shared<Procedure>(name, stmt_list);
+        procedures[name] = procedure;
+        std::cout << "Parsed procedure: " << name << " with " << stmt_list.size() << " statements\n";
+
+        procedure->print();
+
         return parsed_tree;
     }
 
