@@ -17,6 +17,7 @@ namespace query {
         std::filesystem::path basePath = std::filesystem::path(__FILE__).parent_path().parent_path();
         std::string inputFilePath = (basePath / "files" / "query_input.txt").string();
         std::string outputFilePath = (basePath / "files" / "query_output.txt").string();
+        std::string partialOutputFilePath = (basePath / "files" / "query_output_partial.txt").string();
         // Check paths
         printf("%s\n", inputFilePath.c_str());
         printf("%s\n", outputFilePath.c_str());
@@ -30,6 +31,11 @@ namespace query {
 
         // Opening output file
         std::ofstream outputFile(outputFilePath);
+        if (!outputFile.is_open()) {
+            std::cerr << "Error when opening output file!" << std::endl;
+            return;
+        }
+        std::ofstream partialOutputFile(partialOutputFilePath);
         if (!outputFile.is_open()) {
             std::cerr << "Error when opening output file!" << std::endl;
             return;
@@ -189,8 +195,8 @@ namespace query {
         for (auto &instr: instructions) {
             instr.print_instruction();
             instr.process_query();
-            //instr.print_final_results_to_file(outputFile);
-            instr.print_distinct_results_to_file(outputFile);
+            instr.print_final_results_to_file(outputFile);
+            instr.print_distinct_results_to_file(partialOutputFile);
         }
 
         print_relations();

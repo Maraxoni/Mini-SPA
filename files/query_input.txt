@@ -20,6 +20,9 @@ Select b such that Next(a, b)
 Select b such that Next*(a, b)
 Select b such that Affects(a, b)
 
+Select a such that Follows*(a, 24)
+Select b such that Follows*(24, b)
+
 Select x1 such that Follows(1, 2)
 Select y1 such that Parent(2, 3)
 Select width such that Uses(3, width)

@@ -68,6 +68,24 @@ namespace query {
         }
 
         void print_instruction_to_file(std::ofstream &file) const {
+            // 1. Zbieramy wszystkie zmienne, które pojawiły się w wynikach (variableResults)
+            std::set<std::string> result_variables;
+            for (const auto &row : variableResults) {
+                for (const auto &[key, _] : row) {
+                    result_variables.insert(key);
+                }
+            }
+
+            // 2. Wypisujemy deklarację stmt a, b, ...;
+            file << "stmt ";
+            size_t idx = 0;
+            for (const auto &var : result_variables) {
+                file << var;
+                if (idx != result_variables.size() - 1) file << ", ";
+                ++idx;
+            }
+            file << ";\n";
+
             file << "Select ";
             for (size_t i = 0; i < select_variables.size(); ++i) {
                 file << select_variables[i];
@@ -94,7 +112,6 @@ namespace query {
 
         void print_final_results_to_file(std::ofstream &file) const {
             print_instruction_to_file(file);
-            file << "Results:\n";
 
             std::set<std::vector<int> > seen_rows;
 
@@ -116,13 +133,20 @@ namespace query {
                 }
             }
 
-            for (const auto &line: seen_rows) {
+            size_t row_idx = 0;
+            for (const auto &line : seen_rows) {
                 for (size_t i = 0; i < line.size(); ++i) {
                     file << line[i];
-                    if (i != line.size() - 1) file << ", ";
+                    if (i != line.size() - 1) {
+                        file << ", ";
+                    }
                 }
-                file << "\n";
+                if (row_idx != seen_rows.size() - 1) {
+                    file << ", ";
+                }
+                ++row_idx;
             }
+            file << "\n";
         }
 
         void print_distinct_results_to_file(std::ofstream &file) const {
