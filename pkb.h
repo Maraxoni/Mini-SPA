@@ -26,6 +26,7 @@ enum TNode_type : int {
 class TNode {
 public:
     explicit TNode(std::shared_ptr<Node> node) {
+//        std::cout << "Creating TNode with type: " << get_node_type(node.get()) << std::endl;
         this->node = std::move(node);
         this->set_tnode_type();
     }
@@ -183,11 +184,10 @@ public:
             // returning statement list
         case TN_PROCEDURE: {
             auto node = TNode->get_node();
-            std::string s = typeid(node).name();
             //try to cast node to Procedure, if it fails, return empty list
             if (!std::dynamic_pointer_cast<Procedure>(node)) {
                 fatal_error(__PRETTY_FUNCTION__, __LINE__,
-                            "Failed to cast node to Procedure - node obj type: " + s);
+                            "Failed to cast node to Procedure - node obj type: " + get_node_type(node.get()));
                 return {};
             }
             children = std::dynamic_pointer_cast<Procedure>(node)->stmt_list;

@@ -246,4 +246,6 @@ public:
     }
 };
 
+std::string get_node_type(Node *node);
+
 #endif //MINISPA_NODES_H

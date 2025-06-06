@@ -34,3 +34,5 @@
 
 .idea/
 cmake-*/
+files/query_output.txt
+files/query_output_partial.txt
