@@ -21,10 +21,14 @@ public:
     virtual ~Node() = default;
 
     [[nodiscard]] virtual std::string to_string() const = 0;
+
     virtual void print(int indent = 0) const = 0;
+
     void print_indent(int indent) const {
         for (int i = 0; i < indent; ++i) std::cout << "  ";
     }
+
+    size_t mLineNumber = 0;
 };
 
 // stmtLst : stmt+
@@ -34,25 +38,30 @@ public:
 class Procedure : public Node {
 public:
     std::string name;
-    std::vector<std::shared_ptr<Node>> stmt_list;
+    std::vector<std::shared_ptr<Node>> stmt_list{};
 
     Procedure(const std::string &name, const std::vector<std::shared_ptr<Node>> &stmt_list) {
         this->name = name;
         this->stmt_list = stmt_list;
     }
 
+    explicit Procedure(const std::string &name) {
+        this->name = name;
+    }
+
     [[nodiscard]] std::string to_string() const override {
-        std::string result = "===== PROCEDURE  " + name + " {\n";
+        std::string result = "===== PROCEDURE " + name + " at line " + std::to_string(mLineNumber) + " {\n";
         for (const auto &stmt: stmt_list) {
             result += stmt->to_string() + "\n";
         }
         result += "}\n===== END PROCEDURE " + name;
         return result;
     }
+
     void print(int indent = 0) const override {
         print_indent(indent);
-        std::cout << "Procedure: " << name << "\n";
-        for (const auto& stmt : stmt_list) {
+        std::cout << "Procedure: " << name << "[" << mLineNumber << "]\n";
+        for (const auto &stmt: stmt_list) {
             stmt->print(indent + 1);
         }
     }
@@ -80,12 +89,11 @@ public:
 
     void print(int indent = 0) const override {
         print_indent(indent);
-        std::cout << "While: " << var_name << "\n";
-        for (const auto& stmt : stmt_list) {
+        std::cout << "While: " << var_name << " [" << mLineNumber << "]\n";
+        for (const auto &stmt: stmt_list) {
             stmt->print(indent + 1);
         }
     }
-
 
 
 };
@@ -96,18 +104,18 @@ public:
     std::vector<std::shared_ptr<Node>> then_stmt_list;
     std::vector<std::shared_ptr<Node>> else_stmt_list;
 
-    IfStmt(const std::string& var_name,
-           const std::vector<std::shared_ptr<Node>>& then_stmt_list,
-           const std::vector<std::shared_ptr<Node>>& else_stmt_list)
+    IfStmt(const std::string &var_name,
+           const std::vector<std::shared_ptr<Node>> &then_stmt_list,
+           const std::vector<std::shared_ptr<Node>> &else_stmt_list)
             : var_name(var_name), then_stmt_list(then_stmt_list), else_stmt_list(else_stmt_list) {}
 
     [[nodiscard]] std::string to_string() const override {
         std::string result = "=== if " + var_name + " then {\n";
-        for (const auto& stmt : then_stmt_list) {
+        for (const auto &stmt: then_stmt_list) {
             result += stmt->to_string() + "\n";
         }
         result += "} end if === else {\n";
-        for (const auto& stmt : else_stmt_list) {
+        for (const auto &stmt: else_stmt_list) {
             result += stmt->to_string() + "\n";
         }
         result += "} === end else";
@@ -116,15 +124,15 @@ public:
 
     void print(int indent = 0) const override {
         print_indent(indent);
-        std::cout << "If: " << var_name << "\n";
+        std::cout << "If: " << var_name << "[" << mLineNumber << "]\n";
         print_indent(indent);
         std::cout << "Then:\n";
-        for (const auto& stmt : then_stmt_list) {
+        for (const auto &stmt: then_stmt_list) {
             stmt->print(indent + 1);
         }
         print_indent(indent);
         std::cout << "Else:\n";
-        for (const auto& stmt : else_stmt_list) {
+        for (const auto &stmt: else_stmt_list) {
             stmt->print(indent + 1);
         }
     }
@@ -148,10 +156,9 @@ public:
 
     void print(int indent = 0) const override {
         print_indent(indent);
-        std::cout << "Assign: " << var_name << "\n";
+        std::cout << "Assign: " << var_name << " [" << mLineNumber << "]\n";
         expr->print(indent + 1);
     }
-
 
 
 };
@@ -175,7 +182,7 @@ public:
 
     void print(int indent = 0) const override {
         print_indent(indent);
-        std::cout << "Expr: " << op << "\n";
+        std::cout << "Expr: " << op << "[" << mLineNumber << "]\n";
         left->print(indent + 1);  // recur left
         right->print(indent + 1);  // recur right
     }
@@ -208,7 +215,7 @@ public:
 
     void print(int indent = 0) const override {
         print_indent(indent);
-        std::cout << "Factor: " << value << "\n";
+        std::cout << "Factor: " << value << " [" << mLineNumber << "]\n";
     }
 
 
@@ -224,7 +231,7 @@ public:
 
     explicit Call(const std::string &proc_name) : proc_name(proc_name) {}
 
-    void set_procedure(const std::shared_ptr<Procedure>& proc) {
+    void set_procedure(const std::shared_ptr<Procedure> &proc) {
         procedure = proc;
     }
 
