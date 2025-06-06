@@ -136,7 +136,7 @@ private:
     std::shared_ptr<TNode> parent;
     std::shared_ptr<TNode> left_sibling;
     TNode_type type;
-    int mCommand_no;
+    int mCommand_no{};
 };
 
 class PKB {
@@ -182,7 +182,15 @@ public:
         }
             // returning statement list
         case TN_PROCEDURE: {
-            children = std::dynamic_pointer_cast<Procedure>(TNode->get_node())->stmt_list;
+            auto node = TNode->get_node();
+            std::string s = typeid(node).name();
+            //try to cast node to Procedure, if it fails, return empty list
+            if (!std::dynamic_pointer_cast<Procedure>(node)) {
+                fatal_error(__PRETTY_FUNCTION__, __LINE__,
+                            "Failed to cast node to Procedure - node obj type: " + s);
+                return {};
+            }
+            children = std::dynamic_pointer_cast<Procedure>(node)->stmt_list;
             break;
         }
             // returning conditional variable and statement list
@@ -668,7 +676,9 @@ private:
             return nullptr;
         }
 
-        this->rootNode = std::make_shared<TNode>(Parser::instance().parse_procedure());
+        auto tempRootNode = Parser::instance().parse_procedure();
+
+        this->rootNode = std::make_shared<TNode>(tempRootNode);
         set_tnode_children(rootNode, get_tnode_children_as_node(rootNode));
 
         assign_command_no(rootNode);

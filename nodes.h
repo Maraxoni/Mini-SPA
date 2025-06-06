@@ -47,6 +47,7 @@ public:
 
     explicit Procedure(const std::string &name) {
         this->name = name;
+        this->stmt_list = {};
     }
 
     [[nodiscard]] std::string to_string() const override {

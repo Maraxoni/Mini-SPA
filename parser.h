@@ -342,9 +342,9 @@ public:
         parsed_tree->mLineNumber = lexer->get_line();
         parsed_tree->print();
 
-
         auto procedure = std::make_shared<Procedure>(name, stmt_list);
         procedure->mLineNumber = procLine;
+
         procedures[name] = procedure;
         std::cout << "Parsed procedure: " << name << " with " << stmt_list.size() << " statements\n";
 
@@ -553,12 +553,16 @@ public:
         auto call_node = std::make_shared<Call>(proc_name);
         call_node->mLineNumber = lexer->get_line();
 
-        auto it = procedures.find(proc_name);
+        // created dummy procedure for now, since parsing procedures is done after parsing calls prob
+        auto proc = std::make_shared<Procedure>("Dummy");
+        call_node->procedure = proc;
+
+        /*auto it = procedures.find(proc_name);
         if (it != procedures.end()) {
             call_node->procedure = it->second;
         } else {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Call to undefined procedure: " + proc_name);
-        }
+        }*/
 
         return call_node;
     }
