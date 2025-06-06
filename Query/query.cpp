@@ -38,8 +38,7 @@ namespace query {
         // Instructions vector
         std::vector<Instruction> instructions;
         // PKB node tree instance
-        std::shared_ptr<TNode> rootNode = PKB::instance().get_ast();
-        std::vector<std::shared_ptr<TNode> > allNodes = PKB::get_ast_as_list(rootNode);
+        PKB::instance().initialize();
 
         // Lists of nodes of certain types
         // std::vector<std::shared_ptr<TNode> > procedureNodes;
@@ -64,71 +63,104 @@ namespace query {
         //         factorNodes.push_back(node);
         //     }
         // }
-        // Select pattern with such that or and
-        std::regex selectPattern(
-            R"(Select\s+(\w+)\s+(such\s+that|and)\s+(.*))"
-        );
 
-        // Relations: Follows, Parent, Modifies, Uses
+        std::regex selectPattern(R"(^Select\s+(<[^>]+>|\w+)(.*)$)");
         std::regex relationPattern(
-            R"((Follows\*?|Parent\*?|Modifies|Uses)\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\))"
-        );
-
-        // "with" clauses
+            R"((Follows\*?|Parent\*?|Modifies|Uses|Calls|Next\*?|Affects\*?)\s*\(\s*([^,]+)\s*,\s*([^)]+)\s*\))");
         std::regex withPattern(
-            R"(with\s+(\w+)\.([\w#]+)\s*=\s*(?:"([^"]+)|(\d+)|(\w+)))"
+            R"(with\s+(\w+)\.([\w#]+)\s*=\s*(?:"([^"]+)\"|(\d+)|(\w+)))"
         );
+        std::regex clauseSplitter(R"(\b(such\s+that|and|with)\b)");
 
-        std::smatch match;
         std::string line;
         while (std::getline(inputFile, line)) {
-            if (std::regex_match(line, match, selectPattern)) {
-                std::string selectSynonym = match[1].str();
-                std::string instructionsPart = match[3].str();
+            std::smatch m;
+            if (!std::regex_match(line, m, selectPattern)) {
+                std::cout << "No match for line: " << line << std::endl;
+                continue;
+            }
 
-                Instruction instr(selectSynonym);
+            std::string selectPart = m[1].str();
+            std::string rest = m[2].str();
 
-                // Rozbijamy na części po "such that" i "and" (bez usuwania delimitera)
-                std::regex clauseSplitter(R"(\s+(such\s+that|and)\s+)");
-                std::sregex_token_iterator it(instructionsPart.begin(), instructionsPart.end(), clauseSplitter, -1);
-                std::sregex_token_iterator end;
+            // Parse select variables (single or tuple)
+            std::vector<std::string> selectVars;
+            if (selectPart.front() == '<') {
+                std::string inside = selectPart.substr(1, selectPart.size() - 2);
+                std::stringstream ss(inside);
+                std::string var;
+                while (std::getline(ss, var, ',')) {
+                    selectVars.push_back(trim(var));
+                }
+            } else {
+                selectVars.push_back(trim(selectPart));
+            }
 
-                SubInstruction *lastSub = nullptr;
+            Instruction instr(selectVars);
 
-                for (; it != end; ++it) {
-                    std::string part = it->str();
+            // Split rest by "such that" and "and"
+            std::regex clauseSplit(R"(\b(such\s+that|and)\b)");
+            std::sregex_token_iterator it(rest.begin(), rest.end(), clauseSplit, -1);
+            std::sregex_token_iterator end;
 
-                    // Searching relations
-                    std::smatch relMatch;
-                    if (std::regex_search(part, relMatch, relationPattern)) {
-                        SubInstruction sub(relMatch[1], relMatch[2], relMatch[3]);
-                        instr.add_sub_instruction(sub);
-                        lastSub = &instr.get_last_sub_instruction();
-                    }
+            for (; it != end; ++it) {
+                std::string clause = trim(it->str());
+                if (clause.empty()) continue;
 
-                    // Searching clauses
-                    auto withBegin = std::sregex_iterator(part.begin(), part.end(), withPattern);
-                    auto withEnd = std::sregex_iterator();
-                    for (auto wit = withBegin; wit != withEnd; ++wit) {
-                        if (!lastSub) continue; // Jeśli nie ma relacji, ignoruj "with"
+                // Check if clause is a relation
+                std::smatch relMatch;
+                if (std::regex_search(clause, relMatch, relationPattern)) {
+                    std::string relation = relMatch[1];
+                    std::string left = trim(relMatch[2]);
+                    std::string right = trim(relMatch[3]);
+
+                    SubInstruction sub(relation, left, right);
+
+                    // Check if there is a with clause inside this same clause (e.g. "Follows(a,b) with a.attr=5")
+                    auto witBegin = std::sregex_iterator(clause.begin(), clause.end(), withPattern);
+                    auto witEnd = std::sregex_iterator();
+                    for (auto wit = witBegin; wit != witEnd; ++wit) {
                         std::smatch wMatch = *wit;
                         SynonymConstraint syn;
                         syn.synonym = wMatch[1];
                         syn.attribute = wMatch[2];
-
-                        if (wMatch[3].matched) syn.value = wMatch[3]; // "quoted string"
-                        else if (wMatch[4].matched) syn.value = wMatch[4]; // number
-                        else if (wMatch[5].matched) syn.value = wMatch[5]; // variable
-
-                        lastSub->add_synonym_constraint(syn);
+                        if (wMatch[3].matched) syn.value = wMatch[3];
+                        else if (wMatch[4].matched) syn.value = wMatch[4];
+                        else if (wMatch[5].matched) syn.value = wMatch[5];
+                        sub.add_synonym_constraint(syn);
                     }
+
+                    instr.add_sub_instruction(sub);
+                    continue;
                 }
 
-                instructions.push_back(instr);
-            } else {
-                std::cout << "No match: " << line << "\n";
+                // Check if clause is a pure "with" clause (without relation)
+                auto witBegin = std::sregex_iterator(clause.begin(), clause.end(), withPattern);
+                auto witEnd = std::sregex_iterator();
+                for (auto wit = witBegin; wit != witEnd; ++wit) {
+                    std::smatch wMatch = *wit;
+                    SynonymConstraint syn;
+                    syn.synonym = wMatch[1];
+                    syn.attribute = wMatch[2];
+                    if (wMatch[3].matched) syn.value = wMatch[3];
+                    else if (wMatch[4].matched) syn.value = wMatch[4];
+                    else if (wMatch[5].matched) syn.value = wMatch[5];
+
+                    // Jeśli nie ma sub_instructions, tworzymy sztuczny sub (np. z relacją "With")
+                    if (instr.sub_instructions.empty()) {
+                        SubInstruction sub("With", "", "");
+                        sub.add_synonym_constraint(syn);
+                        instr.add_sub_instruction(sub);
+                    } else {
+                        // Dodajemy constraint do ostatniej sub_instruct
+                        instr.get_last_sub_instruction().add_synonym_constraint(syn);
+                    }
+                }
             }
+
+            instructions.push_back(instr);
         }
+
 
         // std::cout << "\nProcedure Nodes: ";
         // for (const auto &node: procedureNodes) {
@@ -161,6 +193,8 @@ namespace query {
             instr.print_distinct_results_to_file(outputFile);
         }
 
+        print_relations();
+
         // Closing files
         inputFile.close();
         outputFile.close();
@@ -170,28 +204,60 @@ namespace query {
 
     void print_relations() {
         std::cout << "\nFollows" << std::endl;
-        for (const auto& [left, right] : *PKB::followsRelations) {
-            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() <<"), ";
+        for (const auto &[left, right]: *PKB::followsRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() << "), ";
         }
+
         std::cout << "\nFollows*" << std::endl;
-        for (const auto& [left, right] : *PKB::followsTRelations) {
-            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() <<"), ";
+        for (const auto &[left, right]: *PKB::followsTRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() << "), ";
         }
+
         std::cout << "\nParent" << std::endl;
-        for (const auto& [left, right] : *PKB::parentRelations) {
-            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() <<"), ";
+        for (const auto &[left, right]: *PKB::parentRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() << "), ";
         }
+
         std::cout << "\nParent*" << std::endl;
-        for (const auto& [left, right] : *PKB::parentTRelations) {
-            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() <<"), ";
+        for (const auto &[left, right]: *PKB::parentTRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() << "), ";
         }
+
         std::cout << "\nModifies" << std::endl;
-        for (const auto& [left, right] : *PKB::modifiesRelations) {
-            std::cout << "(" << left.get_command_no() << ": " << right.to_string() <<"), ";
+        for (const auto &[left, right]: *PKB::modifiesRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.to_string() << "), ";
         }
+
         std::cout << "\nUses" << std::endl;
-        for (const auto& [left, right] : *PKB::usesRelations) {
-            std::cout << "(" << left.get_command_no() << ": " << right.to_string() <<"), ";
+        for (const auto &[left, right]: *PKB::usesRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.to_string() << "), ";
         }
+
+        std::cout << "\nCalls" << std::endl;
+        for (const auto &[left, right]: *PKB::callsRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() << "), ";
+        }
+
+        std::cout << "\nNext" << std::endl;
+        for (const auto &[left, right]: *PKB::nextRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() << "), ";
+        }
+
+        std::cout << "\nNext*" << std::endl;
+        for (const auto &[left, right]: *PKB::nextTRelations) {
+            std::cout << "(" << left.get_command_no() << ": " << right.get_command_no() << "), ";
+        }
+
+        std::cout << std::endl;
     }
+
+
+    std::string trim(const std::string& s) {
+        auto start = s.find_first_not_of(" \t\n\r");
+        auto end = s.find_last_not_of(" \t\n\r");
+        if (start == std::string::npos || end == std::string::npos)
+            return "";
+        return s.substr(start, end - start + 1);
+    }
+
 }
