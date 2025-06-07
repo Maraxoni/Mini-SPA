@@ -4,11 +4,10 @@
 
 #include "pkb.h"
 #include "Query/query.h"
-
+#include "benchmark_tool.h"
 int main() {
 
     //std::string path = "../files/input_min.txt";
-
     // std::string path = "../files/input_min2.txt";
 
     std::string path = "../files/SIMPLE_Source_parser_test.txt";
@@ -16,8 +15,13 @@ int main() {
         fatal_error(__PRETTY_FUNCTION__, __LINE__, "Failed to initialize parser");
         return -1;
     }
+
+    BenchmarkTool tool;
     Parser::instance().parse_program();
+    tool.breakpoint(1);
     PKB::instance().initialize();
+    tool.breakpoint(2);
+    tool.reset();
 
     int input=1;
     while(input!=0){

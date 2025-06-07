@@ -44,7 +44,7 @@ namespace query {
         // Instructions vector
         std::vector<Instruction> instructions;
         // PKB node tree instance
-        PKB::instance().initialize();
+//        PKB::instance().initialize();
 
 
         // Lists of nodes of certain types
@@ -81,11 +81,13 @@ namespace query {
 
         std::string line;
         while (std::getline(inputFile, line)) {
+            BenchmarkTool tool(fmt::color::green_yellow, line);
             std::smatch m;
             if (!std::regex_match(line, m, selectPattern)) {
                 std::cout << "No match for line: " << line << std::endl;
                 continue;
             }
+            tool.breakpoint(1);
 
             std::string selectPart = m[1].str();
             std::string rest = m[2].str();
@@ -109,6 +111,7 @@ namespace query {
             std::regex clauseSplit(R"(\b(such\s+that|and)\b)");
             std::sregex_token_iterator it(rest.begin(), rest.end(), clauseSplit, -1);
             std::sregex_token_iterator end;
+            tool.breakpoint(2);
 
             for (; it != end; ++it) {
                 std::string clause = trim(it->str());
@@ -164,6 +167,8 @@ namespace query {
                     }
                 }
             }
+            tool.breakpoint(3);
+            tool.reset();
 
             instructions.push_back(instr);
         }
@@ -194,10 +199,12 @@ namespace query {
         // }
         print_relations();
         for (auto &instr: instructions) {
+            BenchmarkTool tool;
             instr.print_instruction();
             instr.process_query();
             instr.print_final_results_to_file(outputFile);
             instr.print_distinct_results_to_file(partialOutputFile);
+            tool.reset();
         }
 
         print_relations();

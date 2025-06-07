@@ -554,15 +554,15 @@ public:
         call_node->mLineNumber = lexer->get_line();
 
         // created dummy procedure for now, since parsing procedures is done after parsing calls prob
-        auto proc = std::make_shared<Procedure>("Dummy");
-        call_node->procedure = proc;
+//        auto proc = std::make_shared<Procedure>("Dummy");
+//        call_node->procedure = proc;
 
-        /*auto it = procedures.find(proc_name);
+        auto it = procedures.find(proc_name);
         if (it != procedures.end()) {
             call_node->procedure = it->second;
         } else {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Call to undefined procedure: " + proc_name);
-        }*/
+        }
 
         return call_node;
     }
