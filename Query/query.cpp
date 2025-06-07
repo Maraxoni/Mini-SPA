@@ -38,8 +38,8 @@ namespace query {
         // Instructions vector
         std::vector<Instruction> instructions;
         // PKB node tree instance
-        std::shared_ptr<TNode> rootNode = PKB::instance().get_ast();
-        std::vector<std::shared_ptr<TNode> > allNodes = PKB::get_ast_as_list(rootNode);
+        // std::shared_ptr<TNode> rootNode = PKB::instance().get_ast();
+        // std::vector<std::shared_ptr<TNode> > allNodes = PKB::get_ast_as_list(rootNode);
 
         // Lists of nodes of certain types
         // std::vector<std::shared_ptr<TNode> > procedureNodes;

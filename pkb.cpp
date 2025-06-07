@@ -11,6 +11,7 @@ std::shared_ptr<std::vector<std::pair<TNode, TNode>>> PKB::nextRelations = std::
 std::shared_ptr<std::vector<std::pair<TNode, TNode>>> PKB::nextTRelations = std::make_shared<std::vector<std::pair<TNode, TNode>>>();
 
 void pkb::test() {
-    const auto ast = PKB::instance().get_ast();
-    std::cout << ast->to_string() << std::endl;
+    for (auto relation : *PKB::usesRelations) {
+
+    }
 }
