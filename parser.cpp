@@ -10,7 +10,7 @@ void parser::test1() {
 
     std::cout << "=== Parsed Procedures ===\n";
     for (const auto& [name, proc] : all_procedures) {
-        std::cout << proc->to_string() << "\n\n";
+        proc->print();
     }
 
 }

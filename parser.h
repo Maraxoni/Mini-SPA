@@ -89,10 +89,19 @@ private:
     std::string code;
     size_t pos;
     char currentChar;
+    size_t line;
+    size_t column;
 
     void advance() {
+        if (currentChar == '\n') {
+            line++;
+            column = 0;
+        } else {
+            column++;
+        }
+
         pos++;
-        currentChar = (pos < code.size()) ? code[pos] : '\0'; //if pos is out of bounds, return null character
+        currentChar = (pos < code.size()) ? code[pos] : '\0';
     }
 
     void skip_whitespace() {
@@ -104,21 +113,33 @@ private:
 public:
     size_t get_pos() const { return pos; }
 
+    size_t get_line() const { return line; }
+
+    size_t get_column() const { return column; }
+
     void set_pos(size_t new_pos) {
         pos = new_pos;
         currentChar = (pos < code.size()) ? code[pos] : '\0';
 
+        // Recalculate line and column
+        line = 1;
+        column = 1;
+        for (size_t i = 0; i < pos; ++i) {
+            if (code[i] == '\n') {
+                line++;
+                column = 1;
+            } else {
+                column++;
+            }
+        }
     }
 
-
-    explicit Lexer(const std::string &code) {
-        this->code = code;
-        pos = 0;
-        currentChar = this->code[pos];
+    explicit Lexer(const std::string &code)
+            : code(code), pos(0), line(1), column(1) {
+        currentChar = (pos < code.size()) ? code[pos] : '\0';
     }
 
     Token next_token() {
-        //skip all whitespaces to reach the next token
         skip_whitespace();
 
         if (isalpha(currentChar)) {
@@ -130,12 +151,11 @@ public:
 
             if (value == "procedure") return {TokenType::PROCEDURE, value};
             if (value == "while") return {TokenType::WHILE, value};
-            //TODO: return, ...
             if (value == "call") return {TokenType::CALL, value};
             if (value == "if") return {TokenType::IF, value};
             if (value == "then") return {TokenType::THEN, value};
             if (value == "else") return {TokenType::ELSE, value};
-            // if not a keyword, then it is a variable name
+
             return {TokenType::NAME, value};
         }
 
@@ -186,13 +206,16 @@ public:
             return {TokenType::SEMICOLON, ";"};
         }
 
-        //after reaching end of file, advance() would set currentChar to '\0'
         if (currentChar == '\0') {
             return {TokenType::END, ""};
         }
 
-        fatal_error(__PRETTY_FUNCTION__, __LINE__, "Error: Unexpected character " + std::string(1, currentChar));
-        return {TokenType::END, ""};
+        fatal_error(__PRETTY_FUNCTION__, __LINE__,
+                    "Error at line " + std::to_string(line) +
+                    ", column " + std::to_string(column) +
+                    ": Unexpected character '" + std::string(1, currentChar) + "'");
+
+        return {TokenType::END, ""}; // just to satisfy return type
     }
 };
 
@@ -216,6 +239,7 @@ private:
                                                        currentToken.to_string());
         }
     }
+
     static bool load_code_from_file(const std::string &filePath, std::string &code) {
         //open file
         std::ifstream t(filePath);
@@ -246,6 +270,7 @@ private:
             if (currentToken.type == TokenType::RBRACE) brace_count--;
         }
     }
+
     //private constructor
     Parser() = default;
 
@@ -263,7 +288,8 @@ public:
         static Parser instance;
         return instance;
     }
-    const std::map<std::string, std::shared_ptr<Procedure>>& get_all_procedures() const {
+
+    const std::map<std::string, std::shared_ptr<Procedure>> &get_all_procedures() const {
         return procedures;
     }
 
@@ -301,6 +327,7 @@ public:
 
         //after 'procedure' keyword, there should be a name of the procedure
         std::string name = currentToken.value;
+        size_t procLine = lexer->get_line();
         eat_and_read_next_token(TokenType::NAME);
         eat_and_read_next_token(TokenType::LBRACE);
 
@@ -312,10 +339,12 @@ public:
 
         eat_and_read_next_token(TokenType::RBRACE);
         parsed_tree = std::make_shared<Procedure>(name, stmt_list);
+        parsed_tree->mLineNumber = lexer->get_line();
         parsed_tree->print();
 
-
         auto procedure = std::make_shared<Procedure>(name, stmt_list);
+        procedure->mLineNumber = procLine;
+
         procedures[name] = procedure;
         std::cout << "Parsed procedure: " << name << " with " << stmt_list.size() << " statements\n";
 
@@ -334,13 +363,18 @@ public:
             if (currentToken.type != TokenType::LBRACE) {
                 fatal_error(__PRETTY_FUNCTION__, __LINE__, "Expected '{' after procedure name");
             }
-            procedures[name] = std::make_shared<Procedure>(name, std::vector<std::shared_ptr<Node>>{});
+
+            auto procedure = std::make_shared<Procedure>(name);
+            procedure->mLineNumber = lexer->get_line();
+
+            procedures[name] = procedure;
+//            std::cout << "Found procedure: " << name << " at position " << block_start << "at line: " << lexer->get_line() << std::endl;
             unresolved_procedures.push_back({name, block_start});
             skip_block();
             currentToken = lexer->next_token();
         }
         // F2
-        for (const auto& up : unresolved_procedures) {
+        for (const auto &up: unresolved_procedures) {
             lexer->set_pos(up.lexer_pos);
             currentToken = lexer->next_token();
             eat_and_read_next_token(TokenType::LBRACE);
@@ -356,7 +390,7 @@ public:
                || currentToken.type == TokenType::WHILE
                || currentToken.type == TokenType::CALL
                || currentToken.type == TokenType::IF
-               ) {
+                ) {
             stmts.push_back(parse_stmt());
         }
         return stmts;
@@ -374,7 +408,9 @@ public:
 
     std::shared_ptr<WhileStmt> parse_while() {
         eat_and_read_next_token(TokenType::WHILE);
+
         std::string var_name = currentToken.value;
+        size_t whileLine = lexer->get_line();
         eat_and_read_next_token(TokenType::NAME);
         eat_and_read_next_token(TokenType::LBRACE);
 
@@ -385,11 +421,16 @@ public:
         }
 
         eat_and_read_next_token(TokenType::RBRACE);
-        return std::make_shared<WhileStmt>(var_name, stmt_list);
+        auto while_stmt = std::make_shared<WhileStmt>(var_name, stmt_list);
+        while_stmt->mLineNumber = whileLine;
+
+        return while_stmt;
     }
+
     std::shared_ptr<Node> parse_if() {
         eat_and_read_next_token(TokenType::IF);
         std::string var_name = currentToken.value;
+        size_t ifLine = lexer->get_line();
         eat_and_read_next_token(TokenType::NAME);
 
         eat_and_read_next_token(TokenType::THEN);
@@ -402,27 +443,40 @@ public:
         auto else_stmts = parse_stmt_list();
         eat_and_read_next_token(TokenType::RBRACE);
 
-        return std::make_shared<IfStmt>(var_name, then_stmts, else_stmts);
+        auto ifStmt = std::make_shared<IfStmt>(var_name, then_stmts, else_stmts);
+        ifStmt->mLineNumber = ifLine;
+
+        return ifStmt;
     }
 
 
     std::shared_ptr<Assign> parse_assign() {
         std::string var_name = currentToken.value;
         eat_and_read_next_token(TokenType::NAME);
+        size_t assignLine = lexer->get_line();
 
         eat_and_read_next_token(TokenType::EQUAL);
         auto expr = parse_expr();
 
         eat_and_read_next_token(TokenType::SEMICOLON);
-        return std::make_shared<Assign>(var_name, expr);
+
+        auto assignStmt = std::make_shared<Assign>(var_name, expr);
+        assignStmt->mLineNumber = assignLine;
+
+        return assignStmt;
     }
+
     std::shared_ptr<Node> parse_expr() {
         if (!initialized) {
             return nullptr;
         }
 
+        size_t exprLine = lexer->get_line();
         auto left = parse_factor();
-        while (currentToken.type == TokenType::PLUS || currentToken.type == TokenType::MINUS || currentToken.type == TokenType::TIMES) {
+        left ->mLineNumber = exprLine;
+
+        while (currentToken.type == TokenType::PLUS || currentToken.type == TokenType::MINUS ||
+               currentToken.type == TokenType::TIMES) {
             char op = currentToken.value[0];
 
             // TODO: div?
@@ -439,6 +493,7 @@ public:
 
             auto right = parse_factor();
             left = std::make_shared<Expr>(left, op, right);
+            left->mLineNumber = exprLine;
         }
         return left;
     }
@@ -457,28 +512,37 @@ public:
 
         if (currentToken.type == TokenType::NAME) {
             std::string value = currentToken.value;
+            size_t nameLine = lexer->get_line();
             if (!simple_semantic_utils::verify_name(value)) {
                 fatal_error(__PRETTY_FUNCTION__, __LINE__, "Invalid variable name " + value);
                 return nullptr;
             }
 
             eat_and_read_next_token(TokenType::NAME);
-            return std::make_shared<Factor>(value);
+
+            auto factor = std::make_shared<Factor>(value);
+            factor->mLineNumber = nameLine;
+            return factor;
         }
         if (currentToken.type == TokenType::INTEGER) {
             std::string value = currentToken.value;
+            size_t integerLine = lexer->get_line();
             if (!simple_semantic_utils::verify_integer(value)) {
                 fatal_error(__PRETTY_FUNCTION__, __LINE__, "Invalid integer value " + value);
                 return nullptr;
             }
 
             eat_and_read_next_token(TokenType::INTEGER);
-            return std::make_shared<Factor>(value);
+
+            auto factor = std::make_shared<Factor>(value);
+            factor->mLineNumber = integerLine;
+            return factor;
         }
 
         fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unexpected token " + currentToken.to_string());
         return nullptr;
     }
+
     std::shared_ptr<Call> parse_call() {
         eat_and_read_next_token(TokenType::CALL);
 
@@ -487,13 +551,18 @@ public:
         eat_and_read_next_token(TokenType::SEMICOLON);
 
         auto call_node = std::make_shared<Call>(proc_name);
+        call_node->mLineNumber = lexer->get_line();
 
-        auto it = procedures.find(proc_name);
+        // created dummy procedure for now, since parsing procedures is done after parsing calls prob
+        auto proc = std::make_shared<Procedure>("Dummy");
+        call_node->procedure = proc;
+
+        /*auto it = procedures.find(proc_name);
         if (it != procedures.end()) {
             call_node->procedure = it->second;
         } else {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Call to undefined procedure: " + proc_name);
-        }
+        }*/
 
         return call_node;
     }
