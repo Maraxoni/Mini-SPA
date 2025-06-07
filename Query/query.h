@@ -7,6 +7,7 @@
 
 namespace query {
     // Query processing function
+    std::string processPQL(const std::string& declarations, const std::string& selectLine, bool instruction_cond);
     void processQueries();
     void print_relations();
     std::string trim(const std::string& s);

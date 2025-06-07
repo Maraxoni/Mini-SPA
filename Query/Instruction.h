@@ -1,19 +1,17 @@
-//
-// Created by Marax on 27.04.2025.
-//
-
+// Instruction.h
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
+
 #include <iostream>
 #include <fstream>
-#include <list>
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_set>
+#include <unordered_map>
 #include <vector>
+#include <algorithm>
+#include <sstream>
 
-#include "query.h"
 #include "SubInstruction.h"
 #include "../pkb.h"
 
@@ -24,8 +22,8 @@ namespace query {
     public:
         std::vector<std::string> select_variables;
         std::vector<SubInstruction> sub_instructions;
-
-        std::vector<std::unordered_map<std::string, int> > variableResults;
+        std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > variableResults;
+        std::unordered_map<std::string, std::string> synonymTypes;
 
         Instruction(const std::vector<std::string> &selects) : select_variables(selects) {
         }
@@ -35,321 +33,238 @@ namespace query {
         }
 
         SubInstruction &get_last_sub_instruction() {
-            if (sub_instructions.empty()) {
-                throw std::out_of_range("No sub-instructions available.");
-            }
+            if (sub_instructions.empty()) throw std::out_of_range("No sub-instructions.");
             return sub_instructions.back();
         }
 
-        void print_instruction() const {
-            std::cout << "Select ";
-            for (size_t i = 0; i < select_variables.size(); ++i) {
-                std::cout << select_variables[i];
-                if (i != select_variables.size() - 1) std::cout << ", ";
+        std::string get_variables_with_types_string() const {
+            std::unordered_map<std::string, std::vector<std::string>> type_to_synonyms;
+
+            for (const auto& [syn, type] : synonymTypes) {
+                type_to_synonyms[type].push_back(syn);
             }
 
-            if (!sub_instructions.empty()) {
-                std::cout << " such that ";
-            }
-
-            for (size_t i = 0; i < sub_instructions.size(); ++i) {
-                const auto &sub = sub_instructions[i];
-                if (i != 0) std::cout << " and ";
-                std::cout << sub.relation << "(" << sub.left_param << ", " << sub.right_param << ")";
-
-                for (size_t j = 0; j < sub.synonym_constraints.size(); ++j) {
-                    const auto &syn = sub.synonym_constraints[j];
-                    std::cout << (j == 0 ? " with " : " and ")
-                            << syn.synonym << "." << syn.attribute << " = " << syn.value;
+            std::ostringstream oss;
+            for (const auto& [type, syn_list] : type_to_synonyms) {
+                oss << type << " ";
+                for (size_t i = 0; i < syn_list.size(); ++i) {
+                    oss << syn_list[i];
+                    if (i < syn_list.size() - 1) oss << ", ";
                 }
+                oss << "; ";
             }
-
-            std::cout << std::endl;
+            oss << "\n";
+            return oss.str();
         }
 
-        void print_instruction_to_file(std::ofstream &file) const {
-            // 1. Zbieramy wszystkie zmienne, które pojawiły się w wynikach (variableResults)
-            std::set<std::string> result_variables;
-            for (const auto &row : variableResults) {
-                for (const auto &[key, _] : row) {
-                    result_variables.insert(key);
-                }
-            }
+        std::string get_instruction_string() const {
+            std::ostringstream oss;
 
-            // 2. Wypisujemy deklarację stmt a, b, ...;
-            file << "stmt ";
-            size_t idx = 0;
-            for (const auto &var : result_variables) {
-                file << var;
-                if (idx != result_variables.size() - 1) file << ", ";
-                ++idx;
-            }
-            file << ";\n";
-
-            file << "Select ";
-            for (size_t i = 0; i < select_variables.size(); ++i) {
-                file << select_variables[i];
-                if (i != select_variables.size() - 1) file << ", ";
-            }
-
-            if (!sub_instructions.empty()) {
-                file << " such that ";
-            }
-
-            for (size_t i = 0; i < sub_instructions.size(); ++i) {
-                const auto &sub = sub_instructions[i];
-                if (i != 0) file << " and ";
-                file << sub.relation << "(" << sub.left_param << ", " << sub.right_param << ")";
-                for (size_t j = 0; j < sub.synonym_constraints.size(); ++j) {
-                    const auto &syn = sub.synonym_constraints[j];
-                    file << (j == 0 ? " with " : " and ")
-                            << syn.synonym << "." << syn.attribute << " = " << syn.value;
-                }
-            }
-
-            file << "\n";
-        }
-
-        void print_final_results_to_file(std::ofstream &file) const {
-            print_instruction_to_file(file);
-
-            std::set<std::vector<int> > seen_rows;
-
-            for (const auto &row: variableResults) {
-                std::vector<int> result_line;
-                bool all_present = true;
-
-                for (const auto &sel: select_variables) {
-                    if (row.count(sel)) {
-                        result_line.push_back(row.at(sel));
-                    } else {
-                        all_present = false;
-                        break;
-                    }
-                }
-
-                if (all_present) {
-                    seen_rows.insert(result_line);
-                }
-            }
-
-            size_t row_idx = 0;
-            for (const auto &line : seen_rows) {
-                for (size_t i = 0; i < line.size(); ++i) {
-                    file << line[i];
-                    if (i != line.size() - 1) {
-                        file << ", ";
-                    }
-                }
-                if (row_idx != seen_rows.size() - 1) {
-                    file << ", ";
-                }
-                ++row_idx;
-            }
-            file << "\n";
-        }
-
-        void print_distinct_results_to_file(std::ofstream &file) const {
-            if (select_variables.empty()) {
-                file << "No select variable specified.\n";
-                return;
-            }
-
-            // Wypisz zapytanie
-            print_instruction_to_file(file);
-
-            if (select_variables.size() == 1) {
-                // Grupa wyników dla jednej zmiennej SELECT
-                const std::string &select = select_variables[0];
-                file << "Grouped results for Select " << select << ":\n";
-
-                std::unordered_map<int, std::unordered_set<std::string> > resultGroups;
-
-                for (const auto &row: variableResults) {
-                    if (!row.count(select)) continue;
-                    int mainVal = row.at(select);
-                    // Zbierz wszystkie pozostałe wartości jako stringi (z kluczem=wartością)
-                    for (const auto &[key, val]: row) {
-                        if (key == select) continue;
-                        resultGroups[mainVal].insert(std::to_string(val));
-                    }
-                }
-
-                for (const auto &[mainVal, relatedVals]: resultGroups) {
-                    file << mainVal << ": ";
-                    bool first = true;
-                    for (const auto &val: relatedVals) {
-                        if (!first) file << ", ";
-                        file << val;
-                        first = false;
-                    }
-                    file << " | ";
-                }
-                file << "\n";
+            // Sekcja SELECT
+            oss << "Select ";
+            if (select_variables.size() == 1 && select_variables[0] == "BOOLEAN") {
+                oss << "BOOLEAN";
             } else {
-                // Grupa wyników dla wielu zmiennych SELECT
-                // Mapujemy wartość pierwszej zmiennej na zestawy pozostałych zmiennych
-
-                file << "Grouped results for Select ";
                 for (size_t i = 0; i < select_variables.size(); ++i) {
-                    file << select_variables[i];
-                    if (i != select_variables.size() - 1) file << ", ";
+                    oss << select_variables[i];
+                    if (i != select_variables.size() - 1) oss << ", ";
                 }
-                file << ":\n";
-
-                // map: pierwsza zmienna -> set of tuples (pozostałe zmienne)
-                std::unordered_map<int, std::set<std::vector<int> > > groupedResults;
-
-                for (const auto &row: variableResults) {
-                    if (!row.count(select_variables[0])) continue;
-                    int keyVal = row.at(select_variables[0]);
-
-                    std::vector<int> others;
-                    bool all_present = true;
-                    for (size_t i = 1; i < select_variables.size(); ++i) {
-                        if (!row.count(select_variables[i])) {
-                            all_present = false;
-                            break;
-                        }
-                        others.push_back(row.at(select_variables[i]));
-                    }
-                    if (all_present) {
-                        groupedResults[keyVal].insert(others);
-                    }
-                }
-
-                for (const auto &[keyVal, tuples]: groupedResults) {
-                    file << keyVal << ": ";
-                    bool firstTuple = true;
-                    for (const auto &tuple: tuples) {
-                        if (!firstTuple) file << "; ";
-                        file << "(";
-                        for (size_t i = 0; i < tuple.size(); ++i) {
-                            file << tuple[i];
-                            if (i != tuple.size() - 1) file << ", ";
-                        }
-                        file << ")";
-                        firstTuple = false;
-                    }
-                    file << " | ";
-                }
-                file << "\n";
             }
+
+            // Sekcja SUCH THAT
+            if (!sub_instructions.empty()) {
+                oss << " such that ";
+
+                for (size_t i = 0; i < sub_instructions.size(); ++i) {
+                    const auto &sub = sub_instructions[i];
+                    if (i != 0) oss << " and ";
+
+                    oss << sub.relation << "(" << sub.left_param << ", " << sub.right_param << ")";
+
+                    // Sekcja WITH (jeśli są)
+                    if (!sub.synonym_constraints.empty()) {
+                        oss << " with ";
+                        for (size_t j = 0; j < sub.synonym_constraints.size(); ++j) {
+                            const auto &c = sub.synonym_constraints[j];
+                            oss << c.synonym << "." << c.attribute << " = \"" << c.value << "\"";
+                            if (j != sub.synonym_constraints.size() - 1) oss << " and ";
+                        }
+                    }
+                }
+            }
+
+            oss << "\n";
+            return oss.str();
         }
+
 
         void process_query() {
-            if (select_variables.empty()) {
-                std::cout << "No select variables specified." << std::endl;
-                return;
-            }
+            std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > result_set = {{}};
 
-            const std::string &first_select = select_variables[0];
-            std::cout << "Searching parsed code for: " << first_select << std::endl;
+            std::sort(sub_instructions.begin(), sub_instructions.end(),
+                      [](const SubInstruction &a, const SubInstruction &b) {
+                          return instruction_weight(a) > instruction_weight(b);
+                      });
 
-            std::vector<std::unordered_map<std::string, int> > intermediateResults;
+            for (auto &sub: sub_instructions) {
+                std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > current_result;
+                auto relationData = get_relation_data(sub.relation);
 
-            for (const SubInstruction &sub: sub_instructions) {
-                std::shared_ptr<std::vector<std::pair<TNode, TNode> > > relationVec;
+                for (auto &[left, right]: relationData) {
+                    std::unordered_map<std::string, std::shared_ptr<TNode> > row;
 
-                // Mapowanie nazw relacji do wektorów z PKB
-                if (sub.relation == "Follows") {
-                    relationVec = PKB::followsRelations;
-                } else if (sub.relation == "Follows*") {
-                    relationVec = PKB::followsTRelations;
-                } else if (sub.relation == "Parent") {
-                    relationVec = PKB::parentRelations;
-                } else if (sub.relation == "Parent*") {
-                    relationVec = PKB::parentTRelations;
-                } else if (sub.relation == "Modifies") {
-                    relationVec = PKB::modifiesRelations;
-                } else if (sub.relation == "Uses") {
-                    relationVec = PKB::usesRelations;
-                } else if (sub.relation == "Calls") {
-                    relationVec = PKB::callsRelations;
-                } else if (sub.relation == "Next") {
-                    relationVec = PKB::nextRelations;
-                } else if (sub.relation == "Next*") {
-                    relationVec = PKB::nextTRelations;
-                } else {
-                    std::cout << "Unknown relation: " << sub.relation << "\n";
-                    continue;
-                }
-
-                std::vector<std::unordered_map<std::string, int> > currentRelationResults;
-
-                // Przechodzimy przez wszystkie pary w relacji
-                for (const auto &[left, right]: *relationVec) {
-                    // Sprawdzamy zgodność parametrów z wartościami w relacji
-                    // Jeśli parametr jest liczbą, to porównujemy bezpośrednio
-                    // Jeśli jest zmienną, to dodajemy do wyniku
-                    bool leftMatches = query_is_number(sub.left_param)
-                                           ? (std::stoi(sub.left_param) == left.get_command_no())
-                                           : true;
-
-                    bool rightMatches = query_is_number(sub.right_param)
-                                            ? (std::stoi(sub.right_param) == right.get_command_no())
-                                            : true;
-
-                    if (!leftMatches || !rightMatches) continue;
-
-                    std::unordered_map<std::string, int> row;
                     if (!query_is_number(sub.left_param)) {
-                        row[sub.left_param] = left.get_command_no();
+                        row[sub.left_param] = std::make_shared<TNode>(left);
+                        synonymTypes[sub.left_param] = tnode_type_to_string(left.get_tnode_type());
                     }
                     if (!query_is_number(sub.right_param)) {
-                        row[sub.right_param] = right.get_command_no();
+                        row[sub.right_param] = std::make_shared<TNode>(right);
+                        synonymTypes[sub.right_param] = tnode_type_to_string(right.get_tnode_type());
                     }
 
-                    currentRelationResults.push_back(std::move(row));
+                    current_result.push_back(std::move(row));
                 }
 
-                // Scalanie wyników (join)
-                if (intermediateResults.empty()) {
-                    intermediateResults = std::move(currentRelationResults);
-                } else {
-                    intermediateResults = join_results(intermediateResults, currentRelationResults);
+                filter_results_by_constraints(current_result, sub.synonym_constraints);
+                result_set = join_results(result_set, current_result);
+            }
+
+            variableResults = std::move(result_set);
+        }
+
+        std::string get_result_string() const {
+            if (select_variables.size() == 1 && select_variables[0] == "BOOLEAN") {
+                return variableResults.empty() ? "false" : "true";
+            }
+
+            std::set<int> unique_values;
+
+            // Zbierz wszystkie unikalne wartości mLineNumber ze wszystkich wyników i wszystkich synonimów
+            for (const auto &row: variableResults) {
+                for (const auto &var: select_variables) {
+                    auto it = row.find(var);
+                    if (it != row.end()) {
+                        unique_values.insert(it->second->get_node()->mLineNumber);
+                    }
                 }
             }
 
-            variableResults = std::move(intermediateResults);
+            // Połącz unikalne wartości przecinkami
+            std::ostringstream oss;
+            size_t count = 0;
+            for (int val: unique_values) {
+                oss << val;
+                if (++count < unique_values.size()) oss << ", ";
+            }
+
+            return oss.str();
         }
 
 
-        std::vector<std::unordered_map<std::string, int> >
-        join_results(const std::vector<std::unordered_map<std::string, int> > &existing,
-                     const std::vector<std::unordered_map<std::string, int> > &incoming) {
-            std::vector<std::unordered_map<std::string, int> > result;
+        static bool query_is_number(const std::string &str) {
+            return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
+        }
 
-            for (const auto &eRow: existing) {
-                for (const auto &iRow: incoming) {
+        static std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > >
+        join_results(const std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > &existing,
+                     const std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > &incoming) {
+            std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > result;
+
+            for (const auto &e: existing) {
+                for (const auto &i: incoming) {
                     bool match = true;
-                    std::unordered_map<std::string, int> merged = eRow;
-
-                    for (const auto &[key, val]: iRow) {
-                        if (merged.count(key)) {
-                            if (merged[key] != val) {
-                                match = false;
-                                break;
-                            }
-                        } else {
-                            merged[key] = val;
+                    auto merged = e;
+                    for (const auto &[k, v]: i) {
+                        if (merged.count(k) && merged[k]->get_node()->mLineNumber != v->get_node()->mLineNumber) {
+                            match = false;
+                            break;
                         }
+                        merged[k] = v;
                     }
-
-                    if (match) {
-                        result.push_back(std::move(merged));
-                    }
+                    if (match) result.push_back(std::move(merged));
                 }
             }
-
             return result;
         }
 
+        static void filter_results_by_constraints(
+            std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > &results,
+            const std::vector<SynonymConstraint> &constraints) {
+            if (constraints.empty()) return;
 
-        bool query_is_number(const std::string &str) {
-            return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
+            std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > filtered;
+
+            for (const auto &row: results) {
+                bool allMatch = true;
+                for (const auto &constraint: constraints) {
+                    auto it = row.find(constraint.synonym);
+                    if (it == row.end()) {
+                        allMatch = false;
+                        break;
+                    }
+
+                    const auto &tnode = it->second;
+                    if (constraint.attribute == "procName" && tnode->to_string() != constraint.value) {
+                        allMatch = false;
+                        break;
+                    }
+                    if (constraint.attribute == "stmt#" && tnode->get_node()->mLineNumber !=
+                        std::stoi(constraint.value)) {
+                        allMatch = false;
+                        break;
+                    }
+                }
+                if (allMatch) filtered.push_back(row);
+            }
+
+            results = std::move(filtered);
+        }
+
+    private:
+        static std::string tnode_type_to_string(int tnode_type) {
+            switch (tnode_type) {
+                case TN_ASSIGN: return "stmt";
+                case TN_WHILE: return "while";
+                case TN_IF: return "stmt";
+                case TN_CALL: return "call";
+                case TN_FACTOR: return "variable";
+                case TN_PROCEDURE: return "procedure";
+                default: return "stmt";
+            }
+        }
+
+        static std::vector<std::pair<TNode, TNode> > &get_relation_data(const std::string &rel) {
+            if (rel == "Uses") return *PKB::usesRelations;
+            if (rel == "Modifies") return *PKB::modifiesRelations;
+            if (rel == "Follows") return *PKB::followsRelations;
+            if (rel == "Follows*") return *PKB::followsTRelations;
+            if (rel == "Parent") return *PKB::parentRelations;
+            if (rel == "Parent*") return *PKB::parentTRelations;
+            if (rel == "Calls") return *PKB::callsRelations;
+            if (rel == "CallsT") return *PKB::callsTRelations;
+            if (rel == "Next") return *PKB::nextRelations;
+            if (rel == "Next*") return *PKB::nextTRelations;
+            static std::vector<std::pair<TNode, TNode> > empty;
+            return empty;
+        }
+
+        static int instruction_weight(const SubInstruction &sub) {
+            int weight = 0;
+            if (query_is_number(sub.left_param)) weight += 2;
+            if (query_is_number(sub.right_param)) weight += 2;
+            if (!sub.synonym_constraints.empty()) weight += 3;
+            static const std::unordered_map<std::string, int> rel_weights = {
+                {"Follows", 2}, {"Follows*", 1},
+                {"Parent", 2}, {"Parent*", 1},
+                {"Modifies", 3}, {"Uses", 3},
+                {"Calls", 2}, {"CallsT", 1},
+                {"Next", 2}, {"Next*", 1}
+            };
+            auto it = rel_weights.find(sub.relation);
+            if (it != rel_weights.end()) weight += it->second;
+            return weight;
         }
     };
-} // query
+} // namespace query
 
-#endif //INSTRUCTION_H
+#endif // INSTRUCTION_H

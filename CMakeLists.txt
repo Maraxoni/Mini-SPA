@@ -20,4 +20,4 @@ add_executable(MiniSPA parser.cpp parser.h nodes.h main.cpp utils.cpp utils.h
         Query/SynonymConstraint.cpp
         Query/SynonymConstraint.h)
 
-target_link_libraries(MiniSPA fmt_formatter benchmark_tool)
+target_link_libraries(MiniSPA fmt_formatter benchmark_tool -static)

@@ -8,7 +8,6 @@ Select a such that Calls(a, b)
 Select a such that Next(a, b)
 Select a such that Next*(a, b)
 Select a such that Affects(a, b)
-
 Select b such that Follows(a, b)
 Select b such that Follows*(a, b)
 Select b such that Parent(a, b)
@@ -19,10 +18,9 @@ Select b such that Calls(a, b)
 Select b such that Next(a, b)
 Select b such that Next*(a, b)
 Select b such that Affects(a, b)
-
 Select a such that Follows*(a, 24)
 Select b such that Follows*(24, b)
-
+Select BOOLEAN such that Follows*(1, 2) such that Parent*(2, 3) and Uses(3, k)
 Select x1 such that Follows(1, 2)
 Select y1 such that Parent(2, 3)
 Select width such that Uses(3, width)
@@ -33,33 +31,43 @@ Select x2 such that Uses(7, x2)
 Select area such that Modifies(8, area)
 Select tmp such that Follows(2, 3)
 Select x5 such that Parent(3, 4)
-Select a such that Follows(a, b) such that Parent(b, c) and Uses(c, d)
-Select a such that Parent(a, b) and Modifies(b, c) and Calls(c, d)
-Select a such that Uses(a, b) and Next(b, c) such that Affects(c, d)
-Select a such that Modifies(a, b) and Calls(b, c) and Next*(c, d)
-Select a such that Calls(a, b) and Next(a, c) and Parent*(c, d)
-Select a such that Next(a, b) such that Affects(b, c) and Follows*(c, d)
-Select a such that Next*(a, b) and Follows(b, c) such that Parent(c, d)
-Select a such that Affects(a, b) and Parent*(b, c) and Uses(c, d)
-Select a such that Follows(a, b) and Modifies(b, c) and Calls(c, d)
-Select a such that Parent(a, b) such that Next(b, c) such that Uses(c, d)
-Select a such that Follows(a, b) and Parent(b, c) with a.procName = "Main" and b.stmt# = 20 and Calls(c, d) with d.procName = "Init"
-Select a such that Parent(a, b) and Modifies(b, c) with c.varName = "width" and Uses(c, d) with d.varName = "height" and Calls(d, e)
-Select a such that Uses(a, b) with b.varName = "tmp" and Next(b, c) and Affects(c, d) with d.stmt# = 15
-Select a such that Modifies(a, b) and Calls(b, c) and Next*(c, d) with d.procName = "Random"
-Select a such that Calls(a, b) and Next(a, c) and Parent*(c, d) with d.stmt# = 10
-Select a such that Next(a, b) and Affects(b, c) and Follows*(c, d) with c.procName = "Transform" and d.varName = "incre"
-Select a such that Next*(a, b) and Follows(b, c) and Parent(c, d) with b.stmt# = 25 and d.procName = "Move"
-Select a such that Affects(a, b) and Parent*(b, c) and Uses(c, d) with a.varName = "I" and d.varName = "x1"
-Select a such that Follows(a, b) and Modifies(b, c) and Calls(c, d) with a.stmt# = 5 and d.procName = "Draw"
-Select a such that Parent(a, b) and Next(b, c) and Uses(c, d) with b.procName = "Shear" and c.varName = "factor"
-Select <x1, y1> such that Follows(1, 2) and Parent(2, 3)
-Select <width, height> such that Modifies(1, width) and Uses(2, height)
-Select <I, j> such that Follows*(1, 2) and Parent(2, 3) and Modifies(3, j)
-Select <x2, area> such that Uses(1, area) and Modifies(2, x2) and Parent(2, 3)
-Select <tmp, x5> such that Follows(1, 2) and Modifies(2, tmp) and Uses(3, x5)
-Select <radius, difference> such that Modifies(1, radius) and Uses(2, difference) and Parent(3, 4)
-Select <top, bottom> such that Parent(1, 2) and Modifies(3, top) and Uses(4, bottom)
-Select <x1, x2, x3> such that Uses(1, x1) and Follows(2, 3) and Modifies(3, x3)
-Select <height, width, area> such that Modifies(1, height) and Uses(2, area) and Parent(2, 3)
-Select <I, j, k> such that Follows*(1, 2) and Parent*(2, 3) and Uses(3, k)
+Select a such that Follows(a, b)
+Select a such that Uses(a, b) with b.varName = "x"
+Select <a, b> such that Parent(a, b)
+Select <a, b> such that Follows*(a, b) with a.stmt# = 3 and b.stmt# = 4
+Select a such that Next*(a, b)
+Select a such that Parent*(a, b) and Uses(b, c)
+Select a such that Follows*(a, b) and Modifies(b, c)
+Select a such that Affects*(a, b)
+Select a such that Modifies(a, b) with b.varName = "temp"
+Select a pattern a("x", _)
+Select a pattern a("y", _"x + 1"_)
+Select a pattern a(_, _)
+Select a such that Uses(a, b) pattern a("z", _"z * 2"_)
+Select a pattern a(_, _"count + 1"_)
+Select a such that Follows(a, b) pattern a(_, _"x"_)
+Select <a, b> pattern a(_, _"value"_) pattern b(_, _)
+Select a with a.procName = "Main"
+Select a with a.varName = "counter"
+Select a such that Modifies(a, b) and Uses(a, c)
+Select a such that Next(a, b) and Affects(b, c)
+Select a such that Calls(a, b) and Parent*(b, c)
+Select a such that Follows(a, b) with b.stmt# = 5 and a.procName = "Draw"
+Select <x, y, z> such that Follows(x, y) and Parent(y, z)
+Select <a, b, c> pattern a(_, _) pattern b(_, _"val + 1"_) pattern c(_, _)
+Select <a, b> such that Parent(a, b) with a.procName = "Init" and b.stmt# = 10
+Select a such that Next*(a, b) with b.stmt# = 20
+Select a such that Affects(a, b) and Modifies(b, c)
+Select a such that Calls(a, b) with b.procName = "Helper"
+Select a such that Parent(a, b) and Uses(b, c) with c.varName = "len"
+Select <a, b> such that Uses(a, b) and Modifies(a, b) with b.varName = "size"
+Select <a, b, c> such that Modifies(a, b) pattern c("count", _)
+Select a such that Follows*(a, b) and Uses(b, c) with c.varName = "temp"
+Select a pattern a(_, _"x + y"_) such that Next(a, b)
+Select a pattern a(_, _"sum"_) such that Affects*(a, b)
+Select a such that Parent*(a, b) and Modifies(b, c) with c.varName = "total"
+Select a such that Calls(a, b) and Calls(b, c)
+Select a such that Next*(a, b) and Parent*(b, c)
+Select a such that Follows(a, b) and Next(b, c) and Uses(c, d)
+Select a such that Uses(a, b) pattern a("input", _)
+Select <a, b> such that Parent(a, b) and Follows*(a, b) and Uses(b, c) with b.stmt# = 8 and c.varName = "pos"
