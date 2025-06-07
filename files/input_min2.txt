@@ -88,4 +88,10 @@ procedure Square{
 procedure Square2{
   y = 3;
   x = 2 + y;
+  call Square3;
+}
+
+procedure Square3{
+  y = 3;
+  x = 2 + y;
 }

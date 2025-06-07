@@ -1,0 +1,13 @@
+procedure Square{
+  call Square2;
+  tmp = 4;
+}
+
+procedure Square2{
+  y = 3;
+  call Square3;
+}
+
+procedure Square3{
+  x = 2 + y;
+}
