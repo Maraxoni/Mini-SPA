@@ -46,6 +46,7 @@ namespace query {
         // PKB node tree instance
         PKB::instance().initialize();
 
+
         // Lists of nodes of certain types
         // std::vector<std::shared_ptr<TNode> > procedureNodes;
         // std::vector<std::shared_ptr<TNode> > whileNodes;

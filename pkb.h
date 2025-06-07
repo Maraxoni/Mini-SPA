@@ -1,3 +1,4 @@
+
 #ifndef MINISPA_PKB_H
 #define MINISPA_PKB_H
 
@@ -26,7 +27,6 @@ enum TNode_type : int {
 class TNode {
 public:
     explicit TNode(std::shared_ptr<Node> node) {
-//        std::cout << "Creating TNode with type: " << get_node_type(node.get()) << std::endl;
         this->node = std::move(node);
         this->set_tnode_type();
     }
@@ -99,6 +99,9 @@ public:
         } else if (std::dynamic_pointer_cast<IfStmt>(node)) {
             type = TN_IF;
         }
+        else {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Unknown node type.");
+        }
     }
 
     static bool can_have_stmt_list(const std::shared_ptr<TNode> &node) {
@@ -137,7 +140,7 @@ private:
     std::shared_ptr<TNode> parent;
     std::shared_ptr<TNode> left_sibling;
     TNode_type type;
-    int mCommand_no{};
+    int mCommand_no = 0;
 };
 
 class PKB {
@@ -150,6 +153,7 @@ public:
     static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> modifiesRelations;
     static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> usesRelations;
     static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> callsRelations;
+    static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> callsTRelations;
     static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> nextRelations;
     static std::shared_ptr<std::vector<std::pair<TNode, TNode>>> nextTRelations;
 
@@ -165,13 +169,13 @@ public:
 
 
     //getter for ast
-    [[nodiscard]] std::shared_ptr<TNode> get_ast() const {
-        return rootNode;
+    [[nodiscard]] std::vector<std::shared_ptr<TNode>> get_root_nodes() const {
+        return root_nodes;
     }
 
     void initialize() {
         this->build_AST();
-        this->build_relations();
+        this->build_pkb_relations();
     }
 
     static std::vector<std::shared_ptr<Node>> get_tnode_children_as_node(const std::shared_ptr<TNode> &TNode) {
@@ -179,18 +183,12 @@ public:
         switch (TNode->get_tnode_type()) {
             // returning called procedure
         case TN_CALL: {
-            // children.push_back(std::dynamic_pointer_cast<Call>(TNode->get_node())->procedure);
+            children.push_back(std::dynamic_pointer_cast<Call>(TNode->get_node())->procedure);
+            break;
         }
             // returning statement list
         case TN_PROCEDURE: {
-            auto node = TNode->get_node();
-            //try to cast node to Procedure, if it fails, return empty list
-            if (!std::dynamic_pointer_cast<Procedure>(node)) {
-                fatal_error(__PRETTY_FUNCTION__, __LINE__,
-                            "Failed to cast node to Procedure - node obj type: " + get_node_type(node.get()));
-                return {};
-            }
-            children = std::dynamic_pointer_cast<Procedure>(node)->stmt_list;
+            children = std::dynamic_pointer_cast<Procedure>(TNode->get_node())->stmt_list;
             break;
         }
             // returning conditional variable and statement list
@@ -246,27 +244,66 @@ public:
         return children;
     }
 
+    // sets parent and sibling relations between TNodes
+    static void set_tnode_relations(const std::map<std::string, std::shared_ptr<Procedure>>& procedure_map) {
+        for (const auto& [name, proc_ptr] : procedure_map) {
+            auto new_root_node = std::make_shared<TNode>(proc_ptr);
+
+            instance().root_nodes.push_back(new_root_node);
+            instance().tnode_list.push_back(new_root_node);
+        }
+        for (const auto& node : instance().root_nodes) {
+            set_tnode_children(node, get_tnode_children_as_node(node));
+        }
+    }
+
     static void set_tnode_children(const std::shared_ptr<TNode> &parent, std::vector<std::shared_ptr<Node>> children) {
         if (children.empty()) { return; }
         else if (children.size() == 1) {
-            const auto first_child = std::make_shared<TNode>(children[0]);
+            std::shared_ptr<TNode> first_child;
+            if (std::dynamic_pointer_cast<Procedure>(children[0])) {
+                first_child = instance().find_node_in_roots(children[0]);
+            } else {
+                first_child = std::make_shared<TNode>(children[0]);
+                instance().tnode_list.push_back(first_child);
+            }
             parent->set_first_child(first_child);
             first_child->set_parent(parent);
-            set_tnode_children(first_child, get_tnode_children_as_node(first_child));
+            if (first_child->get_tnode_type() != TN_PROCEDURE) {
+                // procedures are handled in set_tnode_relations
+                set_tnode_children(first_child, get_tnode_children_as_node(first_child));
+            }
         } else {
-            auto current_child = std::make_shared<TNode>(children[0]);
+            std::shared_ptr<TNode> current_child;
             std::shared_ptr<TNode> next_child;
+            if (std::dynamic_pointer_cast<Procedure>(children[0])) {
+                current_child = instance().find_node_in_roots(children[0]);
+            } else {
+                current_child = std::make_shared<TNode>(children[0]);
+            }
             parent->set_first_child(current_child);
             for (int i = 0; i < children.size() - 1; i++) { // executes loop for every child but last
-                next_child = std::make_shared<TNode>(children[i + 1]);
+                if (std::dynamic_pointer_cast<Procedure>(children[i + 1])) {
+                    next_child = instance().find_node_in_roots(children[i + 1]);
+                } else {
+                    next_child = std::make_shared<TNode>(children[i + 1]);
+                    instance().tnode_list.push_back(current_child);
+                }
                 current_child->set_parent(parent);
                 current_child->set_right_sibling(next_child);
                 next_child->set_left_sibling(current_child);
-                set_tnode_children(current_child, get_tnode_children_as_node(current_child));
+                if (current_child->get_tnode_type() != TN_PROCEDURE) {
+                    // procedures are handled in set_tnode_relations
+                    set_tnode_children(current_child, get_tnode_children_as_node(current_child));
+                }
                 current_child = next_child;
             }
             current_child->set_parent(parent);
-            set_tnode_children(current_child, get_tnode_children_as_node(current_child));
+            if (current_child->get_tnode_type() != TN_PROCEDURE) {
+                // procedures are handled in set_tnode_relations
+                instance().tnode_list.push_back(current_child);
+                set_tnode_children(current_child, get_tnode_children_as_node(current_child));
+            }
         }
     }
 
@@ -283,49 +320,11 @@ public:
         return result;
     }
 
-    static int assign_command_no(const std::shared_ptr<TNode> &node, int command_no = 1) {
-        node->set_command_no(command_no);
-        switch (node->get_tnode_type()) {
-        case TN_PROCEDURE: {
-            for (const auto &child: get_tnode_children(node)) {
-                command_no++;
-                command_no = assign_command_no(child, command_no);
-            }
-            break;
+    static int assign_command_no(const std::vector<std::shared_ptr<TNode>> &nodes) {
+        for (auto node : nodes) {
+            node->set_command_no(1);
         }
-        case TN_WHILE: {
-            node->get_first_child()->set_command_no(command_no);
-            auto children = get_tnode_children(node);
-            children.erase(children.begin()); // ignoring first child (conditional variable)
-            for (const auto &child: children) {
-                command_no++;
-                command_no = assign_command_no(child, command_no);
-            }
-            break;
-        }
-        case TN_IF: {
-            node->get_first_child()->set_command_no(command_no);
-            auto children = get_tnode_children(node);
-            children.erase(children.begin()); // ignoring first child (conditional variable)
-            for (const auto &child: children) {
-                command_no++;
-                command_no = assign_command_no(child, command_no);
-            }
-            break;
-        }
-        case TN_CALL:
-        case TN_ASSIGN:
-        case TN_EXPRESSION:
-        case TN_FACTOR: {
-            node->set_command_no(command_no);
-            for (const auto &child: get_tnode_children(node)) {
-                command_no = assign_command_no(child, command_no);
-            }
-            break;
-        }
-        }
-
-        return command_no;
+        return 0;
     }
 
     // node relations
@@ -495,6 +494,7 @@ public:
         if (node2->get_tnode_type() != TN_PROCEDURE) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Only procedure can be called.");
         }
+        static std::unordered_set allowedTypes = { TN_IF, TN_WHILE };
 
         if (node1->get_tnode_type() == TN_CALL && node1->get_first_child() == node2) { return true; }
 
@@ -504,7 +504,33 @@ public:
                 if (child->get_first_child() == node2) {
                     return true;
                 }
-            } else if (TNode::can_have_stmt_list(child)) {
+            } else if (allowedTypes.count(child->get_tnode_type())) {
+                for (const auto &grandChild : get_tnode_children(child)) {
+                    if (calls(grandChild, node2)) { return true; }
+                }
+            }
+        }
+        return false;
+    }
+
+    static bool callsT(const std::shared_ptr<TNode> &node1, const std::shared_ptr<TNode> &node2) {
+        if (node2->get_tnode_type() != TN_PROCEDURE) {
+            fatal_error(__PRETTY_FUNCTION__, __LINE__, "Only procedure can be called.");
+        }
+        static std::unordered_set allowedTypes = { TN_IF, TN_WHILE };
+
+        if (node1->get_tnode_type() == TN_CALL && node1->get_first_child() == node2) { return true; }
+
+        std::vector<std::shared_ptr<TNode>> children = get_tnode_children(node1);
+        for (const auto &child: children) {
+            if (child->get_tnode_type() == TN_CALL) {
+                if (child->get_first_child() == node2) {
+                    return true;
+                }
+                else {
+                    if (callsT(child->get_first_child(), node2)) { return true; }
+                }
+            } else if (allowedTypes.count(child->get_tnode_type())) {
                 for (const auto &grandChild : get_tnode_children(child)) {
                     if (calls(grandChild, node2)) { return true; }
                 }
@@ -517,7 +543,7 @@ public:
         if (node1->get_tnode_type() == TN_FACTOR || node2->get_tnode_type() == TN_FACTOR) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Factors can't be used in this relationship.");
         }
-        if (node1->get_tnode_type() == TN_EXPRESSION) {
+        if (node1->get_tnode_type() == TN_EXPRESSION || node2->get_tnode_type() == TN_EXPRESSION) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Expressions can't be used in this relationship.");
         }
         switch (node1->get_tnode_type()) {
@@ -569,7 +595,7 @@ public:
         if (node1->get_tnode_type() == TN_FACTOR || node2->get_tnode_type() == TN_FACTOR) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Factors can't be used in this relationship.");
         }
-        if (node1->get_tnode_type() == TN_EXPRESSION) {
+        if (node1->get_tnode_type() == TN_EXPRESSION || node2->get_tnode_type() == TN_EXPRESSION) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Expressions can't be used in this relationship.");
         }
 
@@ -581,10 +607,12 @@ public:
             } else if (node1->get_first_child()) {
                 result = nextT(node1->get_first_child(), node2) ? true : result;
             }
+            break;
         case TN_CALL:
             if (nextT(node1->get_first_child(), node2)) {
                 return true;
             }
+            break;
             // in IF TNode children there is no distinction between then and else stmt, we have to use Nodes instead
         case TN_IF:
             if (std::dynamic_pointer_cast<IfStmt>(node1->get_node())->then_stmt_list[0] == node2->get_node() ||
@@ -593,12 +621,14 @@ public:
                 } else if (node1->get_first_child()->get_right_sibling()) {
                     result = nextT(node1->get_first_child()->get_right_sibling(), node2) ? true : result;
                 }
+            break;
         case TN_WHILE:
             if (node1->get_first_child()->get_right_sibling() == node2) {
                 return true;
             } else if (node1->get_first_child()->get_right_sibling()) {
                 result = nextT(node1->get_first_child()->get_right_sibling(), node2) ? true : result;
             }
+            break;
         case TN_ASSIGN:
             if (node1->get_right_sibling()) {
                 if (node1->get_right_sibling() == node2) {
@@ -622,47 +652,85 @@ public:
     }
 
 private:
-//    std::shared_ptr<Parser> parser;
-    // std::vector<std::shared_ptr<Procedure>> procedure_list;
-    std::shared_ptr<TNode> rootNode{};
+    std::vector<std::shared_ptr<TNode>> root_nodes{}; // rootNode for each procedure
     std::vector<std::shared_ptr<TNode>> tnode_list{};
 
     PKB() = default;
 
-    void build_relations() {
-        auto const nodes1 = get_ast_as_list(this->rootNode);
-        for (const auto &node1: nodes1) {
-            // auto nodes2 = get_ast_as_list(this->rootNode);
-            for (const auto &node2 : nodes1) {
+    void build_pkb_relations() const {
+        static std::unordered_set allowedTypes1 = { TN_IF };
+        static std::unordered_set allowedTypes2 = { TN_IF };
+
+        for (const auto &node1: tnode_list) {
+            for (const auto &node2 : tnode_list) {
                 if (node1 == node2) { continue; }
-                if (node1->get_tnode_type() != TN_FACTOR && parent(node1, node2)) {
+                allowedTypes1 = { TN_PROCEDURE, TN_WHILE, TN_IF, TN_ASSIGN, TN_CALL };
+                allowedTypes2 = { TN_PROCEDURE, TN_WHILE, TN_IF, TN_ASSIGN, TN_CALL };
+                if (allowedTypes1.count(node1->get_tnode_type()) &&
+                    allowedTypes2.count(node2->get_tnode_type()) &&
+                    parent(node1, node2)) {
                     parentRelations->emplace_back(*node1, *node2);
-                }
-                if (node1->get_tnode_type() != TN_FACTOR && parentT(node1, node2)) {
+                    }
+                allowedTypes1 = { TN_PROCEDURE, TN_WHILE, TN_IF, TN_ASSIGN, TN_CALL };
+                allowedTypes2 = { TN_PROCEDURE, TN_WHILE, TN_IF, TN_ASSIGN, TN_CALL };
+                if (allowedTypes1.count(node1->get_tnode_type()) &&
+                    allowedTypes2.count(node2->get_tnode_type()) &&
+                    parentT(node1, node2)) {
                     parentTRelations->emplace_back(*node1, *node2);
-                }
-                if (is_statement(node1) && is_statement(node2) && follows(node1, node2)) {
+                    }
+                allowedTypes1 = { TN_WHILE, TN_IF, TN_ASSIGN, TN_CALL };
+                allowedTypes2 = { TN_WHILE, TN_IF, TN_ASSIGN, TN_CALL };
+                if (allowedTypes1.count(node1->get_tnode_type()) &&
+                    allowedTypes2.count(node2->get_tnode_type()) &&
+                    follows(node1, node2)) {
                     followsRelations->emplace_back(*node1, *node2);
-                }
-                if (is_statement(node1) && is_statement(node2) && followsT(node1, node2)) {
+                    }
+                allowedTypes1 = { TN_WHILE, TN_IF, TN_ASSIGN, TN_CALL };
+                allowedTypes2 = { TN_WHILE, TN_IF, TN_ASSIGN, TN_CALL };
+                if (allowedTypes1.count(node1->get_tnode_type()) &&
+                    allowedTypes2.count(node2->get_tnode_type()) &&
+                    followsT(node1, node2)) {
                     followsTRelations->emplace_back(*node1, *node2);
-                }
-                if (node2->get_tnode_type() == TN_FACTOR && modifies(node1, node2)) {
+                    }
+                allowedTypes1 = { TN_WHILE, TN_IF, TN_ASSIGN, TN_CALL, TN_PROCEDURE };
+                allowedTypes2 = { TN_FACTOR, TN_ASSIGN };
+                if (allowedTypes1.count(node1->get_tnode_type()) &&
+                    allowedTypes2.count(node2->get_tnode_type()) &&
+                    modifies(node1, node2)) {
                     modifiesRelations->emplace_back(*node1, *node2);
-                }
-                if (node2->get_tnode_type() == TN_FACTOR && uses(node1, node2)) {
+                    }
+                allowedTypes1 = { TN_WHILE, TN_IF, TN_ASSIGN, TN_CALL, TN_PROCEDURE };
+                allowedTypes2 = { TN_FACTOR, TN_ASSIGN };
+                if (allowedTypes1.count(node1->get_tnode_type()) &&
+                    allowedTypes2.count(node2->get_tnode_type()) &&
+                    uses(node1, node2)) {
                     usesRelations->emplace_back(*node1, *node2);
-                }
-                if (node2->get_tnode_type() == TN_PROCEDURE && calls(node1, node2)) {
+                    }
+                allowedTypes1 = { TN_WHILE, TN_IF, TN_CALL, TN_PROCEDURE };
+                allowedTypes2 = { TN_PROCEDURE };
+                if (allowedTypes1.count(node1->get_tnode_type()) &&
+                    allowedTypes2.count(node2->get_tnode_type()) &&
+                    calls(node1, node2)) {
                     callsRelations->emplace_back(*node1, *node2);
                 }
-                if (node1->get_tnode_type() != TN_EXPRESSION && node1->get_tnode_type() != TN_FACTOR &&
-                    node2->get_tnode_type() != TN_EXPRESSION && node2->get_tnode_type() != TN_FACTOR &&
+                allowedTypes1 = { TN_WHILE, TN_IF, TN_CALL, TN_PROCEDURE };
+                allowedTypes2 = { TN_PROCEDURE };
+                if (allowedTypes1.count(node1->get_tnode_type()) &&
+                    allowedTypes2.count(node2->get_tnode_type()) &&
+                    callsT(node1, node2)) {
+                    callsTRelations->emplace_back(*node1, *node2);
+                }
+                allowedTypes1 = { TN_WHILE, TN_IF, TN_CALL, TN_PROCEDURE, TN_ASSIGN };
+                allowedTypes2 = { TN_WHILE, TN_IF, TN_CALL, TN_PROCEDURE, TN_ASSIGN };
+                if (allowedTypes1.count(node1->get_tnode_type()) &&
+                    allowedTypes2.count(node2->get_tnode_type()) &&
                     next(node1, node2)) {
                     nextRelations->emplace_back(*node1, *node2);
                 }
-                if (node1->get_tnode_type() != TN_EXPRESSION && node1->get_tnode_type() != TN_FACTOR &&
-                    node2->get_tnode_type() != TN_EXPRESSION && node2->get_tnode_type() != TN_FACTOR &&
+                allowedTypes1 = { TN_WHILE, TN_IF, TN_CALL, TN_PROCEDURE, TN_ASSIGN };
+                allowedTypes2 = { TN_WHILE, TN_IF, TN_CALL, TN_PROCEDURE, TN_ASSIGN };
+                if (allowedTypes1.count(node1->get_tnode_type()) &&
+                    allowedTypes2.count(node2->get_tnode_type()) &&
                     nextT(node1, node2)) {
                     nextTRelations->emplace_back(*node1, *node2);
                 }
@@ -670,20 +738,25 @@ private:
         }
     }
 
-    std::shared_ptr<TNode> build_AST() {
+    void build_AST() {
         if (!Parser::instance().initialized) {
             fatal_error(__PRETTY_FUNCTION__, __LINE__, "Parser is not initialized.");
-            return nullptr;
+            return;
         }
 
-        auto tempRootNode = Parser::instance().parse_procedure();
+        auto procedures_map = Parser::instance().get_all_procedures();
+        set_tnode_relations(procedures_map);
+    }
 
-        this->rootNode = std::make_shared<TNode>(tempRootNode);
-        set_tnode_children(rootNode, get_tnode_children_as_node(rootNode));
+    std::shared_ptr<TNode> find_node_in_roots(const std::shared_ptr<Node>& node) {
+        for (auto tnode : root_nodes) {
+            if (tnode->get_node() == node) {
+                return tnode;
+            }
+        }
 
-        assign_command_no(rootNode);
-
-        return rootNode;
+        fatal_error(__PRETTY_FUNCTION__, __LINE__, "Node not found.");
+        return nullptr;
     }
 };
 

@@ -71,9 +71,27 @@ k = a + d + 7;
 t = a + t + (c + 4) + 23;
 }
 
-procedure circle2{
+procedure Circle2{
   call Circle;
   width = 1;
   height = 0;
   tmp = 0;
+}
+
+procedure Square{
+  call Square2;
+  width = 2;
+  height = 3;
+  tmp = 4;
+}
+
+procedure Square2{
+  y = 3;
+  x = 2 + y;
+  call Square3;
+}
+
+procedure Square3{
+  y = 3;
+  x = 2 + y;
 }

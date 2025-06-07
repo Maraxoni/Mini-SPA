@@ -7,10 +7,12 @@ std::shared_ptr<std::vector<std::pair<TNode, TNode>>> PKB::followsRelations = st
 std::shared_ptr<std::vector<std::pair<TNode, TNode>>> PKB::parentTRelations = std::make_shared<std::vector<std::pair<TNode, TNode>>>();
 std::shared_ptr<std::vector<std::pair<TNode, TNode>>> PKB::parentRelations = std::make_shared<std::vector<std::pair<TNode, TNode>>>();
 std::shared_ptr<std::vector<std::pair<TNode, TNode>>> PKB::callsRelations = std::make_shared<std::vector<std::pair<TNode, TNode>>>();
+std::shared_ptr<std::vector<std::pair<TNode, TNode>>> PKB::callsTRelations = std::make_shared<std::vector<std::pair<TNode, TNode>>>();
 std::shared_ptr<std::vector<std::pair<TNode, TNode>>> PKB::nextRelations = std::make_shared<std::vector<std::pair<TNode, TNode>>>();
 std::shared_ptr<std::vector<std::pair<TNode, TNode>>> PKB::nextTRelations = std::make_shared<std::vector<std::pair<TNode, TNode>>>();
 
 void pkb::test() {
-    const auto ast = PKB::instance().get_ast();
-    std::cout << ast->to_string() << std::endl;
+    for (auto relation : *PKB::usesRelations) {
+
+    }
 }
