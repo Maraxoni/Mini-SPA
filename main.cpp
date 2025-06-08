@@ -10,7 +10,8 @@
 // Function to run the legacy test mode
 void run_old_menu_mode() {
     std::string sourcePath = "../files/SIMPLE_Source_parser_test.txt";
-    std::string queryInputPath = "../files/query_input.txt";
+    //std::string sourcePath = "../files/input_min.txt";
+    std::string queryInputPath = "../files/query_input2.txt";
     std::string queryOutputPath = "../files/query_output.txt";
 
     Parser::instance().initialize_by_file(sourcePath);
@@ -64,6 +65,8 @@ void run_old_menu_mode() {
 
                 infile.close();
                 outfile.close();
+
+                query::print_relations();
 
                 std::cout << "Query results written to: " << queryOutputPath << std::endl;
                 break;

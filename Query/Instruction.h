@@ -1,16 +1,13 @@
-// Instruction.h
 #ifndef INSTRUCTION_H
 #define INSTRUCTION_H
 
 #include <iostream>
-#include <fstream>
-#include <memory>
-#include <set>
-#include <string>
-#include <unordered_map>
 #include <vector>
-#include <algorithm>
+#include <set>
+#include <unordered_map>
+#include <memory>
 #include <sstream>
+#include <algorithm>
 
 #include "SubInstruction.h"
 #include "../pkb.h"
@@ -22,8 +19,9 @@ namespace query {
     public:
         std::vector<std::string> select_variables;
         std::vector<SubInstruction> sub_instructions;
-        std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > variableResults;
-        std::unordered_map<std::string, std::string> synonymTypes;
+        std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > variable_result;
+        std::unordered_map<std::string, std::string> variable_types;
+        bool same_values_cond = false;
 
         Instruction(const std::vector<std::string> &selects) : select_variables(selects) {
         }
@@ -32,208 +30,281 @@ namespace query {
             sub_instructions.push_back(sub);
         }
 
-        SubInstruction &get_last_sub_instruction() {
-            if (sub_instructions.empty()) throw std::out_of_range("No sub-instructions.");
-            return sub_instructions.back();
-        }
-
         std::string get_variables_with_types_string() const {
-            std::unordered_map<std::string, std::vector<std::string>> type_to_synonyms;
-
-            for (const auto& [syn, type] : synonymTypes) {
-                type_to_synonyms[type].push_back(syn);
+            // Map type to list of variables
+            std::unordered_map<std::string, std::vector<std::string> > type_to_vars;
+            for (const auto &[var, type]: variable_types) {
+                type_to_vars[type].push_back(var);
             }
+
+            // Sort types alphabetically
+            std::vector<std::string> sorted_types;
+            for (const auto &[type, _]: type_to_vars) {
+                sorted_types.push_back(type);
+            }
+            std::sort(sorted_types.begin(), sorted_types.end());
 
             std::ostringstream oss;
-            for (const auto& [type, syn_list] : type_to_synonyms) {
+            for (size_t i = 0; i < sorted_types.size(); ++i) {
+                const std::string &type = sorted_types[i];
+                auto vars = type_to_vars.at(type);
+                std::sort(vars.begin(), vars.end());
+
                 oss << type << " ";
-                for (size_t i = 0; i < syn_list.size(); ++i) {
-                    oss << syn_list[i];
-                    if (i < syn_list.size() - 1) oss << ", ";
+                for (size_t j = 0; j < vars.size(); ++j) {
+                    oss << vars[j];
+                    if (j + 1 < vars.size()) {
+                        oss << ", ";
+                    }
                 }
-                oss << "; ";
+                oss << ";";
+                if (i + 1 < sorted_types.size()) {
+                    oss << " ";
+                }
             }
+
             oss << "\n";
+
             return oss.str();
         }
+
 
         std::string get_instruction_string() const {
             std::ostringstream oss;
 
-            // Sekcja SELECT
+            // Select clause
             oss << "Select ";
-            if (select_variables.size() == 1 && select_variables[0] == "BOOLEAN") {
-                oss << "BOOLEAN";
+            if (select_variables.size() == 1) {
+                oss << select_variables[0];
             } else {
+                oss << "<";
                 for (size_t i = 0; i < select_variables.size(); ++i) {
                     oss << select_variables[i];
-                    if (i != select_variables.size() - 1) oss << ", ";
+                    if (i + 1 < select_variables.size()) oss << ", ";
                 }
+                oss << ">";
             }
 
-            // Sekcja SUCH THAT
             if (!sub_instructions.empty()) {
                 oss << " such that ";
 
                 for (size_t i = 0; i < sub_instructions.size(); ++i) {
-                    const auto &sub = sub_instructions[i];
-                    if (i != 0) oss << " and ";
+                    const auto &s = sub_instructions[i];
 
-                    oss << sub.relation << "(" << sub.left_param << ", " << sub.right_param << ")";
+                    // Relation
+                    oss << s.relation << "(" << s.left_param << ", " << s.right_param << ") ";
 
-                    // Sekcja WITH (jeśli są)
-                    if (!sub.synonym_constraints.empty()) {
-                        oss << " with ";
-                        for (size_t j = 0; j < sub.synonym_constraints.size(); ++j) {
-                            const auto &c = sub.synonym_constraints[j];
-                            oss << c.synonym << "." << c.attribute << " = \"" << c.value << "\"";
-                            if (j != sub.synonym_constraints.size() - 1) oss << " and ";
+                    // If there are WITH constraints, print them right after the relation
+                    if (!s.synonym_constraints.empty()) {
+                        for (size_t j = 0; j < s.synonym_constraints.size(); ++j) {
+                            const auto &c = s.synonym_constraints[j];
+                            oss << "with " << c.synonym << "." << c.attribute << " = " << c.value << " ";
                         }
+                    }
+
+                    // If this is not the last sub_instruction, join with "and"
+                    if (i + 1 < sub_instructions.size()) {
+                        oss << "and ";
                     }
                 }
             }
 
             oss << "\n";
+
             return oss.str();
         }
-
 
         void process_query() {
-            std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > result_set = {{}};
+            using Binding = std::unordered_map<std::string, std::shared_ptr<TNode> >;
+            std::vector<Binding> partialResults = {{}};
 
-            std::sort(sub_instructions.begin(), sub_instructions.end(),
-                      [](const SubInstruction &a, const SubInstruction &b) {
-                          return instruction_weight(a) > instruction_weight(b);
-                      });
+            // Sort clauses to start with the most restrictive ones
+            std::vector<SubInstruction> sorted_subs = sub_instructions;
+            std::sort(sorted_subs.begin(), sorted_subs.end(), [](const SubInstruction &a, const SubInstruction &b) {
+                return get_relation_data(a.relation).size() < get_relation_data(b.relation).size();
+            });
 
-            for (auto &sub: sub_instructions) {
-                std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > current_result;
-                auto relationData = get_relation_data(sub.relation);
+            for (const auto &sub: sorted_subs) {
+                const auto &rel_data = get_relation_data(sub.relation);
+                std::vector<Binding> newResults;
 
-                for (auto &[left, right]: relationData) {
-                    std::unordered_map<std::string, std::shared_ptr<TNode> > row;
+                for (const auto &[left, right]: rel_data) {
+                    for (const auto &binding: partialResults) {
+                        Binding newBinding = binding;
+                        bool valid = true;
 
-                    if (!query_is_number(sub.left_param)) {
-                        row[sub.left_param] = std::make_shared<TNode>(left);
-                        synonymTypes[sub.left_param] = tnode_type_to_string(left.get_tnode_type());
+                        // Handling left parameter
+                        if (is_variable(sub.left_param)) {
+                            if (newBinding.count(sub.left_param)) {
+                                if (newBinding[sub.left_param]->get_node()->mLineNumber != left.get_node()->
+                                    mLineNumber) {
+                                    continue; // conflict, skip
+                                }
+                            } else {
+                                newBinding[sub.left_param] = std::make_shared<TNode>(left);
+                            }
+                        } else {
+                            if (std::to_string(left.get_node()->mLineNumber) != sub.left_param) {
+                                continue; // literal doesn't match
+                            }
+                        }
+
+                        // Handling right parameter
+                        if (is_variable(sub.right_param)) {
+                            if (newBinding.count(sub.right_param)) {
+                                if (newBinding[sub.right_param]->get_node()->mLineNumber != right.get_node()->
+                                    mLineNumber) {
+                                    continue;
+                                }
+                            } else {
+                                newBinding[sub.right_param] = std::make_shared<TNode>(right);
+                            }
+                        } else {
+                            if (std::to_string(right.get_node()->mLineNumber) != sub.right_param) {
+                                continue;
+                            }
+                        }
+
+                        // Handling WITH constraints
+                        for (const auto &syn_constraint: sub.synonym_constraints) {
+                            const std::string &syn = syn_constraint.synonym;
+                            const std::string &attr = syn_constraint.attribute;
+                            const std::string &val = syn_constraint.value;
+
+                            if (!newBinding.count(syn)) {
+                                valid = false;
+                                break;
+                            }
+
+                            auto node = newBinding[syn]->get_node();
+
+                            if (is_variable(val)) {
+                                if (!newBinding.count(val)) {
+                                    valid = false;
+                                    break;
+                                }
+
+                                auto val_node = newBinding[val]->get_node();
+                                if (attr == "stmt#" || attr == "value") {
+                                    if (node->mLineNumber != val_node->mLineNumber) {
+                                        valid = false;
+                                        break;
+                                    }
+                                } else if (attr == "procName" || attr == "varName") {
+                                    if (node->mLineNumber != val_node->mLineNumber) {
+                                        valid = false;
+                                        break;
+                                    }
+                                } else {
+                                    valid = false;
+                                    break;
+                                }
+                            } else {
+                                // Literal value
+                                if (attr == "stmt#" || attr == "value") {
+                                    if (std::to_string(node->mLineNumber) != val) {
+                                        valid = false;
+                                        break;
+                                    }
+                                } else if (attr == "procName" || attr == "varName") {
+                                    if (std::to_string(node->mLineNumber) != val) {
+                                        valid = false;
+                                        break;
+                                    }
+                                } else {
+                                    valid = false;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (valid) {
+                            newResults.push_back(newBinding);
+                        }
                     }
-                    if (!query_is_number(sub.right_param)) {
-                        row[sub.right_param] = std::make_shared<TNode>(right);
-                        synonymTypes[sub.right_param] = tnode_type_to_string(right.get_tnode_type());
-                    }
-
-                    current_result.push_back(std::move(row));
                 }
 
-                filter_results_by_constraints(current_result, sub.synonym_constraints);
-                result_set = join_results(result_set, current_result);
+                partialResults = std::move(newResults);
             }
 
-            variableResults = std::move(result_set);
+            // Save final results
+            variable_result = partialResults;
         }
 
+
         std::string get_result_string() const {
-            if (select_variables.size() == 1 && select_variables[0] == "BOOLEAN") {
-                return variableResults.empty() ? "false" : "true";
+            if ((select_variables.size() == 1 || same_values_cond == true) && select_variables[0] == "BOOLEAN") {
+                return variable_result.empty() ? "false" : "true";
             }
 
-            std::set<int> unique_values;
+            // Set to detect unique results
+            std::set<std::string> unique_result_strings;
+            std::vector<std::pair<std::string, std::vector<int> > > sortable_results;
 
-            // Zbierz wszystkie unikalne wartości mLineNumber ze wszystkich wyników i wszystkich synonimów
-            for (const auto &row: variableResults) {
-                for (const auto &var: select_variables) {
-                    auto it = row.find(var);
-                    if (it != row.end()) {
-                        unique_values.insert(it->second->get_node()->mLineNumber);
+            for (const auto &result_per_variable: variable_result) {
+                std::ostringstream result_line;
+                std::vector<int> numeric_values;
+
+                for (size_t i = 0; i < select_variables.size(); ++i) {
+                    const std::string &select = select_variables[i];
+                    auto it = result_per_variable.find(select);
+
+                    if (i > 0) result_line << " ";
+
+                    if (it != result_per_variable.end() && it->second) {
+                        auto node = it->second;
+                        auto syn_type_it = variable_types.find(select);
+
+                        if (syn_type_it != variable_types.end() && syn_type_it->second == "variable") {
+                            result_line << node->to_string();
+                            numeric_values.push_back(0); // treat as 0 for sorting
+                        } else if (
+                            syn_type_it != variable_types.end() && syn_type_it->second == "procedure"
+                        ) {
+                            result_line << node->get_node()->mLineNumber;
+                            numeric_values.push_back(0); // treat as 0 for sorting
+                        } else {
+                            int line = node->get_node()->mLineNumber;
+                            result_line << line;
+                            numeric_values.push_back(line);
+                        }
+                    } else {
+                        result_line << "null";
+                        numeric_values.push_back(-1); // no data
                     }
+                }
+
+                std::string final_str = result_line.str();
+                if (unique_result_strings.insert(final_str).second) {
+                    // if string was unique (insert returned true), add to sortable results
+                    sortable_results.emplace_back(final_str, numeric_values);
                 }
             }
 
-            // Połącz unikalne wartości przecinkami
+            if (sortable_results.empty()) {
+                return "none";
+            }
+
+            std::sort(sortable_results.begin(), sortable_results.end(),
+                      [](const auto &a, const auto &b) {
+                          return a.second < b.second;
+                      });
+
             std::ostringstream oss;
-            size_t count = 0;
-            for (int val: unique_values) {
-                oss << val;
-                if (++count < unique_values.size()) oss << ", ";
+            for (size_t i = 0; i < sortable_results.size(); ++i) {
+                if (i > 0) oss << ", ";
+                oss << sortable_results[i].first;
             }
 
             return oss.str();
-        }
-
-
-        static bool query_is_number(const std::string &str) {
-            return !str.empty() && std::all_of(str.begin(), str.end(), ::isdigit);
-        }
-
-        static std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > >
-        join_results(const std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > &existing,
-                     const std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > &incoming) {
-            std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > result;
-
-            for (const auto &e: existing) {
-                for (const auto &i: incoming) {
-                    bool match = true;
-                    auto merged = e;
-                    for (const auto &[k, v]: i) {
-                        if (merged.count(k) && merged[k]->get_node()->mLineNumber != v->get_node()->mLineNumber) {
-                            match = false;
-                            break;
-                        }
-                        merged[k] = v;
-                    }
-                    if (match) result.push_back(std::move(merged));
-                }
-            }
-            return result;
-        }
-
-        static void filter_results_by_constraints(
-            std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > &results,
-            const std::vector<SynonymConstraint> &constraints) {
-            if (constraints.empty()) return;
-
-            std::vector<std::unordered_map<std::string, std::shared_ptr<TNode> > > filtered;
-
-            for (const auto &row: results) {
-                bool allMatch = true;
-                for (const auto &constraint: constraints) {
-                    auto it = row.find(constraint.synonym);
-                    if (it == row.end()) {
-                        allMatch = false;
-                        break;
-                    }
-
-                    const auto &tnode = it->second;
-                    if (constraint.attribute == "procName" && tnode->to_string() != constraint.value) {
-                        allMatch = false;
-                        break;
-                    }
-                    if (constraint.attribute == "stmt#" && tnode->get_node()->mLineNumber !=
-                        std::stoi(constraint.value)) {
-                        allMatch = false;
-                        break;
-                    }
-                }
-                if (allMatch) filtered.push_back(row);
-            }
-
-            results = std::move(filtered);
         }
 
     private:
-        static std::string tnode_type_to_string(int tnode_type) {
-            switch (tnode_type) {
-                case TN_ASSIGN: return "stmt";
-                case TN_WHILE: return "while";
-                case TN_IF: return "stmt";
-                case TN_CALL: return "call";
-                case TN_FACTOR: return "variable";
-                case TN_PROCEDURE: return "procedure";
-                default: return "stmt";
-            }
+        static bool is_variable(const std::string &param) {
+            return !param.empty() && isalpha(param[0]) && param != "BOOLEAN";
         }
 
-        static std::vector<std::pair<TNode, TNode> > &get_relation_data(const std::string &rel) {
+        static const std::vector<std::pair<TNode, TNode> > &get_relation_data(const std::string &rel) {
             if (rel == "Uses") return *PKB::usesRelations;
             if (rel == "Modifies") return *PKB::modifiesRelations;
             if (rel == "Follows") return *PKB::followsRelations;
@@ -241,28 +312,12 @@ namespace query {
             if (rel == "Parent") return *PKB::parentRelations;
             if (rel == "Parent*") return *PKB::parentTRelations;
             if (rel == "Calls") return *PKB::callsRelations;
-            if (rel == "CallsT") return *PKB::callsTRelations;
+            if (rel == "Calls*") return *PKB::callsTRelations;
             if (rel == "Next") return *PKB::nextRelations;
             if (rel == "Next*") return *PKB::nextTRelations;
-            static std::vector<std::pair<TNode, TNode> > empty;
-            return empty;
-        }
 
-        static int instruction_weight(const SubInstruction &sub) {
-            int weight = 0;
-            if (query_is_number(sub.left_param)) weight += 2;
-            if (query_is_number(sub.right_param)) weight += 2;
-            if (!sub.synonym_constraints.empty()) weight += 3;
-            static const std::unordered_map<std::string, int> rel_weights = {
-                {"Follows", 2}, {"Follows*", 1},
-                {"Parent", 2}, {"Parent*", 1},
-                {"Modifies", 3}, {"Uses", 3},
-                {"Calls", 2}, {"CallsT", 1},
-                {"Next", 2}, {"Next*", 1}
-            };
-            auto it = rel_weights.find(sub.relation);
-            if (it != rel_weights.end()) weight += it->second;
-            return weight;
+            static const std::vector<std::pair<TNode, TNode> > empty;
+            return empty;
         }
     };
 } // namespace query

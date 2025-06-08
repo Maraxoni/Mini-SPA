@@ -15,6 +15,7 @@ namespace query {
         std::string relation;
         std::string left_param;
         std::string right_param;
+        std::string pattern_synonym;
         std::vector<SynonymConstraint > synonym_constraints;
 
         SubInstruction() = default;
@@ -23,8 +24,12 @@ namespace query {
             : relation(rel), left_param(left_p), right_param(right_p) {
         }
 
-        void add_synonym_constraint(const SynonymConstraint  &synonmym_constraint) {
+        void add_synonym_constraint(const SynonymConstraint &synonmym_constraint) {
             synonym_constraints.push_back(synonmym_constraint);
+        }
+
+        void set_pattern_synonym(const std::string &syn) {
+            pattern_synonym = syn;
         }
     };
 }

@@ -1,0 +1,462 @@
+stmt a;
+Select a such that Follows(a, 27)
+stmt a;
+Select a such that Follows(a, 45)
+stmt a;
+Select a such that Follows(a, 138)
+stmt a;
+Select a such that Follows(a, 69)
+stmt a;
+Select a such that Follows(a, 100)
+stmt a;
+Select a such that Follows(a, 57)
+stmt a;
+Select a such that Follows(a, 13)
+stmt a;
+Select a such that Follows(a, 142)
+stmt a;
+Select a such that Follows(a, 87)
+stmt a;
+Select a such that Follows(a, 123)
+stmt b;
+Select b such that Follows(42, b)
+stmt b;
+Select b such that Follows(58, b)
+stmt b;
+Select b such that Follows(111, b)
+stmt b;
+Select b such that Follows(91, b)
+stmt b;
+Select b such that Follows(150, b)
+stmt b;
+Select b such that Follows(66, b)
+stmt b;
+Select b such that Follows(73, b)
+stmt b;
+Select b such that Follows(19, b)
+stmt b;
+Select b such that Follows(138, b)
+stmt b;
+Select b such that Follows(104, b)
+stmt a;
+Select a such that Follows*(a, 132)
+stmt a;
+Select a such that Follows*(a, 48)
+stmt a;
+Select a such that Follows*(a, 13)
+stmt a;
+Select a such that Follows*(a, 105)
+stmt a;
+Select a such that Follows*(a, 90)
+stmt a;
+Select a such that Follows*(a, 119)
+stmt a;
+Select a such that Follows*(a, 27)
+stmt a;
+Select a such that Follows*(a, 100)
+stmt a;
+Select a such that Follows*(a, 53)
+stmt a;
+Select a such that Follows*(a, 143)
+stmt b;
+Select b such that Follows*(31, b)
+stmt b;
+Select b such that Follows*(49, b)
+stmt b;
+Select b such that Follows*(65, b)
+stmt b;
+Select b such that Follows*(77, b)
+stmt b;
+Select b such that Follows*(120, b)
+stmt b;
+Select b such that Follows*(93, b)
+stmt b;
+Select b such that Follows*(146, b)
+stmt b;
+Select b such that Follows*(26, b)
+stmt b;
+Select b such that Follows*(115, b)
+stmt b;
+Select b such that Follows*(135, b)
+stmt a;
+Select a such that Parent(a, 18)
+stmt a;
+Select a such that Parent(a, 35)
+stmt a;
+Select a such that Parent(a, 88)
+stmt a;
+Select a such that Parent(a, 101)
+stmt a;
+Select a such that Parent(a, 76)
+stmt a;
+Select a such that Parent(a, 47)
+stmt a;
+Select a such that Parent(a, 150)
+stmt a;
+Select a such that Parent(a, 60)
+stmt a;
+Select a such that Parent(a, 139)
+stmt a;
+Select a such that Parent(a, 11)
+stmt b;
+Select b such that Parent(19, b)
+stmt b;
+Select b such that Parent(32, b)
+stmt b;
+Select b such that Parent(49, b)
+stmt b;
+Select b such that Parent(85, b)
+stmt b;
+Select b such that Parent(72, b)
+stmt b;
+Select b such that Parent(145, b)
+stmt b;
+Select b such that Parent(90, b)
+stmt b;
+Select b such that Parent(121, b)
+stmt b;
+Select b such that Parent(36, b)
+stmt b;
+Select b such that Parent(134, b)
+stmt a;
+Select a such that Parent*(a, 42)
+stmt a;
+Select a such that Parent*(a, 58)
+stmt a;
+Select a such that Parent*(a, 67)
+stmt a;
+Select a such that Parent*(a, 96)
+stmt a;
+Select a such that Parent*(a, 113)
+stmt a;
+Select a such that Parent*(a, 29)
+stmt a;
+Select a such that Parent*(a, 13)
+stmt a;
+Select a such that Parent*(a, 138)
+stmt a;
+Select a such that Parent*(a, 142)
+stmt a;
+Select a such that Parent*(a, 150)
+stmt b;
+Select b such that Parent*(17, b)
+stmt b;
+Select b such that Parent*(23, b)
+stmt b;
+Select b such that Parent*(64, b)
+stmt b;
+Select b such that Parent*(110, b)
+stmt b;
+Select b such that Parent*(79, b)
+stmt b;
+Select b such that Parent*(143, b)
+stmt b;
+Select b such that Parent*(32, b)
+stmt b;
+Select b such that Parent*(141, b)
+stmt b;
+Select b such that Parent*(38, b)
+stmt b;
+Select b such that Parent*(103, b)
+stmt a;
+Select a such that Uses(a, x)
+stmt a;
+Select a such that Uses(a, y)
+stmt a;
+Select a such that Uses(a, v)
+stmt a;
+Select a such that Uses(a, z)
+stmt a;
+Select a such that Uses(a, t)
+stmt a;
+Select a such that Uses(a, a)
+stmt a;
+Select a such that Uses(a, b)
+stmt a;
+Select a such that Uses(a, c)
+stmt a;
+Select a such that Uses(a, 21)
+stmt a;
+Select a such that Uses(a, 10)
+stmt b;
+Select b such that Uses(10, b)
+stmt b;
+Select b such that Uses(23, b)
+stmt b;
+Select b such that Uses(47, b)
+stmt b;
+Select b such that Uses(69, b)
+stmt b;
+Select b such that Uses(82, b)
+stmt b;
+Select b such that Uses(99, b)
+stmt b;
+Select b such that Uses(113, b)
+stmt b;
+Select b such that Uses(128, b)
+stmt b;
+Select b such that Uses(145, b)
+stmt b;
+Select b such that Uses(150, b)
+stmt a;
+Select a such that Next(a, 14)
+stmt a;
+Select a such that Next(a, 39)
+stmt a;
+Select a such that Next(a, 56)
+stmt a;
+Select a such that Next(a, 77)
+stmt a;
+Select a such that Next(a, 93)
+stmt a;
+Select a such that Next(a, 108)
+stmt a;
+Select a such that Next(a, 121)
+stmt a;
+Select a such that Next(a, 135)
+stmt a;
+Select a such that Next(a, 142)
+stmt a;
+Select a such that Next(a, 150)
+procedure b;
+Select b such that Next(13, b)
+procedure b;
+Select b such that Next(29, b)
+procedure b;
+Select b such that Next(45, b)
+procedure b;
+Select b such that Next(67, b)
+procedure b;
+Select b such that Next(82, b)
+procedure b;
+Select b such that Next(97, b)
+procedure b;
+Select b such that Next(116, b)
+procedure b;
+Select b such that Next(128, b)
+procedure b;
+Select b such that Next(139, b)
+procedure b;
+Select b such that Next(149, b)
+procedure a, b;
+Select a such that Calls(a, b)
+procedure a, b;
+Select b such that Calls(a, b)
+procedure a, b;
+Select a such that Calls*(a, b)
+procedure a, b;
+Select b such that Calls*(a, b)
+stmt a, b;
+Select a such that Follows(a, 23) and Parent*(b, 45)
+procedure p1, p2;
+Select p1 such that Calls(p1, p2) and Calls*(p2, p1)
+stmt a, b;
+Select b such that Next(a, 70) and Affects*(a, b)
+stmt a, b;
+Select a such that Parent(a, 12) and Follows*(a, b)
+stmt a, b;
+Select b such that Next*(a, 55) and Modifies(a, "x")
+stmt a, b;
+Select a such that Follows(a, 120) and Uses(b, "y")
+procedure p1, p2;
+Select p2 such that Calls*(p1, p2) and Calls(p2, p1)
+stmt a, b;
+Select a such that Affects(a, b) and Next*(b, 89)
+stmt a, b;
+Select b such that Parent*(a, b) and Follows(b, 42)
+stmt a, b;
+Select a such that Uses(a, "z") and Modifies(b, "z")
+stmt a, b, c, d;
+Select a such that Follows(a, 23) and Parent*(b, 45) and Next(c, 12) and Affects*(d, 67)
+procedure p1, p2, p3, p4;
+Select p1 such that Calls(p1, p2) and Calls*(p2, p3) and Calls(p3, p4) and Calls*(p4, p1)
+stmt a, b, c, d;
+Select b such that Next*(a, 70) and Follows*(b, 55) and Parent(c, 15) and Uses(d, "x")
+stmt a, b, c, d;
+Select c such that Parent(a, 12) and Follows*(a, b)
+stmt a, b, c, d;
+Select d such that Affects(a, b) and Next*(b, 89) and Uses(c, "z") and Parent*(d, 101)
+procedure p1, p2, p3, p4;
+Select p4 such that Calls*(p1, p2) and Calls(p2, p3) and Calls*(p3, p4) and Calls(p4, p1)
+stmt a, b, c, d;
+Select a such that Follows(a, 120) and Uses(b, "a") and Modifies(c, "b") and Next(d, 42)
+stmt a, b, c, d;
+Select b such that Parent*(a, b) and Follows(b, 42) and Affects*(c, d) and Calls(p13, p27)
+stmt a, b, c, d;
+Select c such that Uses(a, "x") and Modifies(b, "x") and Next*(c, 99) and Follows*(d, 75)
+stmt a, b, c, d;
+Select d such that Parent(a, 33) and Calls(p11, p14) and Follows*(b, c)
+stmt a, b, c; variable v;
+Select a such that Follows(a, b) and Parent*(b, c) and Next*(c, 27) with a.stmt# = 45
+procedure p1, p2, p3;
+Select p1 such that Calls(p1, p2) and Calls*(p2, p3) and Calls(p3, p1)
+stmt a, b, c; variable v;
+Select b such that Uses(a, v) and Modifies(b, v) and Affects*(c, b) with v.varName = "x"
+procedure p1, p2, p3;
+Select p3 such that Calls(p1, p2) and Calls*(p2, p3) and Calls(p3, p1)
+stmt a, b, c; variable v;
+Select a such that Modifies(a, v) and Uses(b, v) and Next*(b, c) with b.stmt# = 56
+stmt a, b, c;
+Select b such that Parent*(a, b) and Follows(b, c) and Affects(a, c) with a.stmt# = 23
+stmt a, b, c; variable v;
+Select c such that Uses(a, v) and Modifies(b, v) and Next(c, b) with c.stmt# = 77
+procedure p1, p2, p3;
+Select p2 such that Calls(p1, p2) and Calls*(p2, p3) and Calls(p3, p1
+stmt a, b, c;
+Select a such that Follows(a, b) and Parent*(b, c) and Uses(c, "z") with a.stmt# = 89
+stmt a, b; variable v;
+Select a such that Follows(a, b) with a.stmt# = 23 and b.stmt# = 45 and v.varName = "x" and a.stmt# = 67 and b.stmt# = 89
+procedure p1, p2;
+Select p1 such that Calls(p1, p2) with p1.procName = "procA" and p2.procName = "procB" and p1.procName = "procC" and p2.procName = "procD" and p1.procName = "procE"
+stmt s; variable v;
+Select s such that Uses(s, v) with s.stmt# = 10 and v.varName = "y" and s.stmt# = 55 and v.varName = "z" and s.stmt# = 75
+stmt a, b, c;
+Select a such that Parent*(a, b) with a.stmt# = 100 and b.stmt# = 115 and a.stmt# = 130 and b.stmt# = 140 and a.stmt# = 150
+stmt a; variable v;
+Select a such that Modifies(a, v) with v.varName = "temp" and a.stmt# = 37 and v.varName = "count" and a.stmt# = 42 and v.varName = "flag"
+procedure p;
+Select p such that Calls*(p, p) with p.procName = "main" and p.procName = "helper" and p.procName = "init" and p.procName = "cleanup" and p.procName = "final"
+stmt a, b;
+Select b such that Next*(a, b) with a.stmt# = 20 and b.stmt# = 35 and a.stmt# = 50 and b.stmt# = 65 and a.stmt# = 80
+stmt a; variable v;
+Select a such that Uses(a, v) with v.varName = "temp" and a.stmt# = 22 and v.varName = "index" and a.stmt# = 40 and v.varName = "limit"
+procedure p1, p2;
+Select p2 such that Calls(p1, p2) with p1.procName = "foo" and p2.procName = "bar" and p1.procName = "baz" and p2.procName = "qux" and p1.procName = "quux"
+stmt a, b, c;
+Select c such that Affects(a, b) with a.stmt# = 10 and b.stmt# = 25 and c.stmt# = 50 and a.stmt# = 75 and b.stmt# = 100
+stmt s1, s2, s3;
+Select <s1, s2, s3> such that Follows(s1, s2) and Follows(s2, s3) with s1.stmt# = 1 and s3.stmt# = 10
+procedure p; variable v;
+Select <p, v> such that Modifies(p, v) with p.procName = "main" and v.varName = "counter"
+stmt s; procedure p;
+Select <s, p> such that Calls(p, _) with s.stmt# = 5 and p.procName = "init"
+stmt a, b;
+Select <a, b> such that Next(a, b) with a.stmt# = 20 and b.stmt# = 21
+variable v1, v2;
+Select <v1, v2> such that Modifies(3, v1) and Modifies(4, v2) with v1.varName = "x" and v2.varName = "y"
+stmt s;
+Select s such that Follows(s, 10) with s.stmt# = 5
+stmt s1, s2;
+Select s1 such that Parent(s1, s2) with s1.stmt# = 15 and s2.stmt# = 20
+variable v;
+Select v such that Modifies(4, v) with v.varName = "temp"
+procedure p;
+Select p such that Calls(_, p) with p.procName = "main"
+stmt s; variable v;
+Select v such that Uses(s, v) with s.stmt# = 12 and v.varName = "flag"
+stmt a, b;
+Select b such that Follows*(a, b) with a.stmt# = 7 and b.stmt# = 11
+stmt s;
+Select s such that Parent*(5, s) with s.stmt# = 9
+stmt s;
+Select s such that Next(s, 6) with s.stmt# = 5
+variable v1, v2;
+Select <v1, v2> such that Modifies(1, v1) and Modifies(2, v2) with v1.varName = "x" and v2.varName = "z"
+procedure p1, p2;
+Select p1 such that Calls(p1, p2) with p2.procName = "run"
+stmt s1, s2;
+Select <s1, s2> such that Next*(s1, s2) with s1.stmt# = 4 and s2.stmt# = 8
+stmt s;
+Select s such that Uses(s, "x") with s.stmt# = 2
+variable v;
+Select v such that Modifies(_, v) with v.varName = "result"
+procedure p;
+Select p such that Calls(p, _) with p.procName = "start"
+stmt s; variable v;
+Select <s, v> such that Uses(s, v) with s.stmt# = 3 and v.varName = "index"
+stmt s1, s2;
+Select s2 such that Follows(s1, s2) with s1.stmt# = 6 and s2.stmt# = 7
+stmt s;
+Select s such that Parent(s, _) with s.stmt# = 10
+variable v;
+Select v such that Uses(3, v) with v.varName = "loopVar"
+procedure p;
+Select p such that Calls(_, p) with p.procName = "helper"
+stmt a, b;
+Select <a, b> such that Affects(a, b) with a.stmt# = 2 and b.stmt# = 5
+stmt s;
+Select s such that Modifies(s, "count") with s.stmt# = 14
+procedure p;
+Select p such that Calls(p, "cleanup") with p.procName = "main"
+stmt s1, s2, s3;
+Select <s1, s2, s3> such that Next(s1, s2) and Next(s2, s3) with s1.stmt# = 1 and s3.stmt# = 5
+stmt s;
+Select s such that Follows*(s, 6) with s.stmt# = 3
+variable v;
+Select v such that Uses(_, v) with v.varName = "acc"
+stmt s;
+Select s such that Parent(1, s) with s.stmt# = 4
+stmt s; procedure p;
+Select <s, p> such that Calls(p, _) with p.procName = "worker" and s.stmt# = 8
+variable v1, v2;
+Select <v1, v2> such that Modifies(_, v1) and Uses(_, v2) with v1.varName = "x" and v2.varName = "y"
+stmt s;
+Select s such that Uses(s, "z") with s.stmt# = 9
+procedure p1, p2;
+Select <p1, p2> such that Calls*(p1, p2) with p1.procName = "main" and p2.procName = "final"
+stmt s1, s2;
+Select <s1, s2> such that Follows(s1, s2) with s1.stmt# = 11 and s2.stmt# = 12
+variable v;
+Select v such that Modifies(7, v) with v.varName = "tmp"
+stmt s;
+Select s such that Parent*(s, 5) with s.stmt# = 2
+stmt s;
+Select s such that Next(3, s) with s.stmt# = 4
+variable v;
+Select v such that Uses(6, v) with v.varName = "val"
+procedure p;
+Select p such that Calls(_, p) with p.procName = "end"
+stmt s; variable v;
+Select <s, v> such that Modifies(s, v) with s.stmt# = 13 and v.varName = "limit"
+stmt s1, s2;
+Select <s1, s2> such that Affects*(s1, s2) with s1.stmt# = 9 and s2.stmt# = 18
+stmt s;
+Select s such that Follows(s, 2) with s.stmt# = 1
+stmt s;
+Select s such that Uses(s, "x") with s.stmt# = 10
+procedure p;
+Select p such that Calls(p, _) with p.procName = "calc"
+stmt s1, s2, s3;
+Select <s1, s2, s3> such that Follows*(s1, s2) and Parent(s2, s3) with s1.stmt# = 1 and s3.stmt# = 6
+variable v;
+Select v such that Modifies(5, v) with v.varName = "limit"
+stmt s;
+Select s such that Parent(2, s) with s.stmt# = 3
+procedure p1, p2;
+Select <p1, p2> such that Calls(p1, p2) with p1.procName = "a" and p2.procName = "b"
+stmt s1, s2;
+Select s1 such that Next*(s1, s2) with s1.stmt# = 5 and s2.stmt# = 10
+stmt s;
+Select s such that Modifies(s, "z") with s.stmt# = 6
+procedure p;
+Select p such that Calls(_, p) with p.procName = "init"
+stmt s; variable v;
+Select <s, v> such that Uses(s, v) with s.stmt# = 21 and v.varName = "counter"
+stmt a, b;
+Select <a, b> such that Follows*(a, b) with a.stmt# = 9 and b.stmt# = 12
+procedure p; variable v;
+Select <p, v> such that Modifies(p, v) with p.procName = "handler" and v.varName = "data"
+stmt s1, s2, s3;
+Select <s1, s2, s3> such that Next(s1, s2) and Next(s2, s3) with s1.stmt# = 2 and s3.stmt# = 8
+stmt s;
+Select s such that Parent(3, s) with s.stmt# = 4
+variable v;
+Select v such that Uses(7, v) with v.varName = "buffer"
+stmt s1, s2;
+Select s2 such that Follows(s1, s2) with s1.stmt# = 11 and s2.stmt# = 13
+procedure p1, p2;
+Select p2 such that Calls(p1, p2) with p1.procName = "compute" and p2.procName = "cleanup"
+stmt s;
+Select s such that Next*(s, 20) with s.stmt# = 17
+variable v1, v2;
+Select <v1, v2> such that Modifies(5, v1) and Uses(6, v2) with v1.varName = "temp" and v2.varName = "max"
+stmt a, b;
+Select b such that Affects(a, b) with a.stmt# = 30 and b.stmt# = 33
+stmt s;
+Select s such that Uses(s, "index") with s.stmt# = 19
+procedure p;
+Select p such that Calls(_, p) with p.procName = "processor"
+stmt s1, s2;
+Select <s1, s2> such that Next(s1, s2) with s1.stmt# = 7 and s2.stmt# = 9
+stmt s; variable v;
+Select v such that Modifies(s, v) with s.stmt# = 14 and v.varName = "threshold"
